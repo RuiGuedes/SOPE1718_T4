@@ -1,1 +1,3 @@
 # SOPE1718_T4P1
+
+Work group for SOPE 2017-2018
