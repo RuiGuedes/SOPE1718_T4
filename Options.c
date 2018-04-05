@@ -44,6 +44,10 @@ const char * setPattern(int argc, char * argv[], int remainVariables) {
 		return argv[argc - 2];
 }
 
+const int checkRecursivity() {
+	return availableOptions[2];
+}
+
 void printOptionsState() {
 	for(int j = 0; j < 6; j++)
 		printf("%d",availableOptions[j]);

@@ -36,16 +36,16 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	/*
 		(1) simgrep pattern 
-				-> Read from shell 
+				-> Read from shell  [CHECK]
 		
 		(2) simgrep <options> pattern
-				-> If options dont include -r 
+				-> If options dont include -r [CHECK]  
 					* (1)
-				-> If options include -r 
+				-> If options include -r [CHECK]
 					* Implies recursivity from the directory in which simgrep is executed
 		
 		(3) simgrep pattern <file/directory>
-				-> If file
+				-> If file [CHECK]
 					* Execute normally
 				-> If directory
 					* Fail because doens't accept directories
@@ -53,24 +53,28 @@ int main(int argc, char* argv[], char* envp[]) {
 		(4) simgrep <options> pattern <file/directory>
 				-> If directory and option -r isn't include
 					* Fail
-				-> If directory and option -r is include
+				-> If directory and option -r is include [CHECK]
 					* Implies recursivity from the directory passed by parameter
-				-> If file
+				-> If file [CHECK]
 					* Execute normally
 	*/
 
 	if(argc < 2) {
-		printf("Usage: simgrep <options> pattern <file/directory>\n");
+		printf("Usage: grep [OPTION]... PATTERN [FILE/DIRECTORY]...\n");
 		return INVALID_FUNCTION_CALL;
 	}
 
 	int optionsRead = initOptions(argc,argv);
 	int remainVariables = argc - (optionsRead + 1);
-	int type;
+	int lastVariabletype;
 
-	if(optionsRead == -1) {
+	if(optionsRead == INVALID_OPTIONS) {
 		printf("Invalid options. Available options: -l , -c , -r , -w , -i , -n\n");
 		return INVALID_OPTIONS;
+	}
+	else if(!remainVariables) {
+		printf("Usage: simgrep [OPTION]... PATTERN [FILE/DIRECTORY]...\n");
+		return INVALID_FUNCTION_CALL;
 	}
 
 	//Get directory
@@ -80,18 +84,27 @@ int main(int argc, char* argv[], char* envp[]) {
 	pattern = setPattern(argc,argv,remainVariables);
 	
 	//Check if last variable is file(0) or directory(1)
-	type = checkFileOrDirectory();
+	lastVariabletype = checkFileOrDirectory();
 
 	//Analyze type value possible errors
-	if(type == STAT_SYSTEM_CALL_FAIL) {
+	if(lastVariabletype == STAT_SYSTEM_CALL_FAIL) {
 		printf("simgrep: %s: No such file or directory\n", directory);
 		return STAT_SYSTEM_CALL_FAIL;
 	}
 
-
+	//Check the needed response to a certain input
+	if(((optionsRead == 0) || !checkRecursivity()) && (remainVariables == 1)) 
+		printf("Read from shell\n");
+	else if(checkRecursivity() && (lastVariabletype == DIRECTORY))
+		printf("Implies recursivity\n" );
+	else if(lastVariabletype == FILE)
+		printf("Execute normally\n" );
+	else if((lastVariabletype == DIRECTORY) && !checkRecursivity())
+		printf("simgrep: %s: Is a directory\n",directory);
+	
 	// ------------------------------------------------------------- //
 
-
+	/*
 	if(type == FILE)
 		printf("FILE\n");
 	else if(type == DIRECTORY)
@@ -106,7 +119,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	printf("currentDirectory %s\n", directory);
 	printf("Pattern %s\n", pattern);
 	printOptionsState();
-
+	*/
 	return 0;
 }
 
