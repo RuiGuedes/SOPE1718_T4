@@ -1,10 +1,36 @@
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "Options.h"
 
 #define bufSize 1024
+
+#define FILE 0
+#define DIRECTORY 1
 #define INVALID_OPTIONS -1
+#define INVALID_FUNCTION_CALL -2
+#define STAT_SYSTEM_CALL_FAIL -3
 
 const char * pattern;
-const char * currentDirectory;
+const char * directory;
+
+int checkFileOrDirectory() {
+
+	int file, dir;
+	struct stat status;
+
+	if(stat(directory, &status) < 0)
+		return STAT_SYSTEM_CALL_FAIL;
+
+	file = S_ISREG(status.st_mode);
+	dir = S_ISDIR(status.st_mode);
+	
+	if(file && !dir)
+		return FILE;
+	else if(!file && dir)
+		return DIRECTORY;
+}
+
 
 int main(int argc, char* argv[], char* envp[]) {
 
@@ -35,40 +61,59 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	if(argc < 2) {
 		printf("Usage: simgrep <options> pattern <file/directory>\n");
-		return -1;
+		return INVALID_FUNCTION_CALL;
 	}
 
 	int optionsRead = initOptions(argc,argv);
 	int remainVariables = argc - (optionsRead + 1);
+	int type;
+
+	if(optionsRead == -1) {
+		printf("Invalid options. Available options: -l , -c , -r , -w , -i , -n\n");
+		return INVALID_OPTIONS;
+	}
+
+	//Get directory
+	directory = setCurrentDirectory(argc,argv,remainVariables);
+	
+	//Get pattern
+	pattern = setPattern(argc,argv,remainVariables);
+	
+	//Check if last variable is file(0) or directory(1)
+	type = checkFileOrDirectory();
+
+	//Analyze type value possible errors
+	if(type == STAT_SYSTEM_CALL_FAIL) {
+		printf("simgrep: %s: No such file or directory\n", directory);
+		return STAT_SYSTEM_CALL_FAIL;
+	}
+
+
+	// ------------------------------------------------------------- //
+
+
+	if(type == FILE)
+		printf("FILE\n");
+	else if(type == DIRECTORY)
+		printf("DIRECTORY\n");
 
 	if(optionsRead == 0)
 		printf("No options were passed\n");
-	else if(optionsRead == -1)
-		return INVALID_OPTIONS;
 	else
 		printf("Number of options passed: %d\n", optionsRead);
 
-	currentDirectory = setCurrentDirectory(argc,argv,remainVariables);
-	pattern = setPattern(argc,argv,remainVariables);
 
-	printf("currentDirectory %s\n", currentDirectory);
+	printf("currentDirectory %s\n", directory);
 	printf("Pattern %s\n", pattern);
-	/*
-	if(initOptions(argc,argv)) {
-		if(options[2]) {
-			currentDirectory = "./";
-			pattern = argv[argc - 1];
-		}
-		else{
-			pattern = argv[argc - 2];
-			currentDirectory = argv[argc - 1];
-		}
-	}
-	else
-		return -1;
-	*/
 	printOptionsState();
-	/*
+
+	return 0;
+}
+
+/*	SAMPLE CODE TO EXECUTE SIMGREP
+	
+	#include <regex.h>
+
 	FILE *fp;
 	char buf[bufSize];
 	int lineNumber = 1;
@@ -100,6 +145,4 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	regfree(&re);
 	fclose(fp);
-	*/
-	return 0;
-}
+*/

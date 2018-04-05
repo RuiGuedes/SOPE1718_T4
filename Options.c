@@ -19,10 +19,8 @@ int initOptions(int argc, char * argv[]) {
 				availableOptions[4] = 1;
 			else if(strcmp(argv[i], "-n") == 0)
 				availableOptions[5] = 1;
-			else {
-				printf("Invalid option. Available options: -l , -c , -r , -w , -i , -n\n");
+			else 
 				return -1;
-			}
 		}
 		else
 			break;
