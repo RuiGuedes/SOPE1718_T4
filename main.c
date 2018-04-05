@@ -1,11 +1,12 @@
-#include <stdio.h>
-#include <string.h>
-#include <regex.h>
-#include "Options.c"
+#include "Options.h"
 
 #define bufSize 1024
+#define INVALID_OPTIONS -1
 
-int main(int argc, char* argv[]) {
+const char * pattern;
+const char * currentDirectory;
+
+int main(int argc, char* argv[], char* envp[]) {
 
 	/*
 		(1) simgrep pattern 
@@ -32,12 +33,27 @@ int main(int argc, char* argv[]) {
 					* Execute normally
 	*/
 
-
 	if(argc < 2) {
-		printf("Invalid call function\n");
+		printf("Usage: simgrep <options> pattern <file/directory>\n");
 		return -1;
 	}
 
+	int optionsRead = initOptions(argc,argv);
+	int remainVariables = argc - (optionsRead + 1);
+
+	if(optionsRead == 0)
+		printf("No options were passed\n");
+	else if(optionsRead == -1)
+		return INVALID_OPTIONS;
+	else
+		printf("Number of options passed: %d\n", optionsRead);
+
+	currentDirectory = setCurrentDirectory(argc,argv,remainVariables);
+	pattern = setPattern(argc,argv,remainVariables);
+
+	printf("currentDirectory %s\n", currentDirectory);
+	printf("Pattern %s\n", pattern);
+	/*
 	if(initOptions(argc,argv)) {
 		if(options[2]) {
 			currentDirectory = "./";
@@ -50,9 +66,9 @@ int main(int argc, char* argv[]) {
 	}
 	else
 		return -1;
-
+	*/
 	printOptionsState();
-
+	/*
 	FILE *fp;
 	char buf[bufSize];
 	int lineNumber = 1;
@@ -84,6 +100,6 @@ int main(int argc, char* argv[]) {
 
 	regfree(&re);
 	fclose(fp);
-	
+	*/
 	return 0;
 }

@@ -1,62 +1,54 @@
-#include "Includes.h"
+#include "Options.h"
 
-////////////////////////////
-// Functions declarations //
-////////////////////////////
-
-int initOptions(int argc, char * argv[]);
-void setCurrentDirectory(int argc, char * argv[]);
-void setPattern(int argc, char * argv[]);
-void printOptionsState();
-
-int options[6] = {0};	// { -l , -c , -r , -w , -i , -n }
+int availableOptions[6] = {0};	// { -l , -c , -r , -w , -i , -n }
+int numberOptions = 0;
 
 int initOptions(int argc, char * argv[]) {
 
-	int numberOptions = 0;
-
 	for(int i = 1; i < argc; i++) {
-		if(strcmp(argv[i], "-l") == 0)
-			options[0] = 1;
-		else if(strcmp(argv[i], "-c") == 0)
-			options[1] = 1;
-		else if(strcmp(argv[i], "-r") == 0)
-			options[2] = 1;
-		else if(strcmp(argv[i], "-w") == 0)
-			options[3] = 1;
-		else if(strcmp(argv[i], "-i") == 0)
-			options[4] = 1;
-		else if(strcmp(argv[i], "-n") == 0)
-			options[5] = 1;
-		else {
-			printf("Invalid function call: invalid option < %s >\n",argv[i]);
-			return -1;
+		if(argv[i][0] == '-') {
+			if(strcmp(argv[i], "-l") == 0)
+				availableOptions[0] = 1;
+			else if(strcmp(argv[i], "-c") == 0)
+				availableOptions[1] = 1;
+			else if(strcmp(argv[i], "-r") == 0)
+				availableOptions[2] = 1;
+			else if(strcmp(argv[i], "-w") == 0)
+				availableOptions[3] = 1;
+			else if(strcmp(argv[i], "-i") == 0)
+				availableOptions[4] = 1;
+			else if(strcmp(argv[i], "-n") == 0)
+				availableOptions[5] = 1;
+			else {
+				printf("Invalid option. Available options: -l , -c , -r , -w , -i , -n\n");
+				return -1;
+			}
 		}
+		else
+			break;
+			
 		numberOptions++;
 	}
-
-	setCurrentDirectory(argc,argv);
-	setPattern(argc,argv);
-	return 0;
+	return numberOptions;
 }
 
-void setCurrentDirectory(int argc, char * argv[]) {
-	if(options[2])
-		currentDirectory = "./";
+const char * setCurrentDirectory(int argc, char * argv[], int remainVariables) {
+	if(remainVariables == 1)
+		return "./";
 	else
-		currentDirectory = argv[argc - 1];
+		return argv[argc - 1];
 }
 
-void setPattern(int argc, char * argv[]) {
-	if(options[2])
-		pattern = argv[argc - 1];
+const char * setPattern(int argc, char * argv[], int remainVariables) {
+	if(remainVariables == 1)
+		return argv[argc - 1];
 	else
-		pattern = argv[argc - 2];
+		return argv[argc - 2];
 }
 
 void printOptionsState() {
 	for(int j = 0; j < 6; j++)
-		printf("%d",options[j]);
+		printf("%d",availableOptions[j]);
 
 	printf("\n");
 }
