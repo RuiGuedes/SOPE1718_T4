@@ -4,4 +4,4 @@
 // Functions declarations //
 ////////////////////////////
 
-int searchFile();
+int searchFile(const char * directory);
