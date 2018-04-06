@@ -2,6 +2,7 @@
 
 int availableOptions[6] = {0};	// { -l , -c , -r , -w , -i , -n }
 int numberOptions = 0;
+char currentDiretory[1024];
 
 int initOptions(int argc, char * argv[]) {
 
@@ -24,15 +25,19 @@ int initOptions(int argc, char * argv[]) {
 		}
 		else
 			break;
-			
+
 		numberOptions++;
 	}
 	return numberOptions;
 }
 
 const char * setCurrentDirectory(int argc, char * argv[], int remainVariables) {
-	if(remainVariables == 1)
-		return "./";
+	if(remainVariables == 1) {
+		if (getcwd(currentDiretory, sizeof(currentDiretory)) != NULL)
+			return currentDiretory;
+		else
+			return "(INVALID DIRETORY)";
+	}
 	else
 		return argv[argc - 1];
 }
