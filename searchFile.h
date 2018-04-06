@@ -1,0 +1,7 @@
+#include "Options.h"
+
+////////////////////////////
+// Functions declarations //
+////////////////////////////
+
+int searchFile();

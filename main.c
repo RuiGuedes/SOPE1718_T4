@@ -1,36 +1,12 @@
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include "Options.h"
+#include "searchDirectory.h"
 
 #define bufSize 1024
 
-#define FILE 0
-#define DIRECTORY 1
 #define INVALID_OPTIONS -1
 #define INVALID_FUNCTION_CALL -2
-#define STAT_SYSTEM_CALL_FAIL -3
 
 const char * pattern;
-const char * directory;
-
-int checkFileOrDirectory() {
-
-	int file, dir;
-	struct stat status;
-
-	if(stat(directory, &status) < 0)
-		return STAT_SYSTEM_CALL_FAIL;
-
-	file = S_ISREG(status.st_mode);
-	dir = S_ISDIR(status.st_mode);
-	
-	if(file && !dir)
-		return FILE;
-	else if(!file && dir)
-		return DIRECTORY;
-}
-
 
 int main(int argc, char* argv[], char* envp[]) {
 
@@ -77,30 +53,32 @@ int main(int argc, char* argv[], char* envp[]) {
 		return INVALID_FUNCTION_CALL;
 	}
 
-	//Get directory
-	directory = setCurrentDirectory(argc,argv,remainVariables);
+	//Get executionDirectory
+	executionDirectory = setCurrentDirectory(argc,argv,remainVariables);
 	
 	//Get pattern
 	pattern = setPattern(argc,argv,remainVariables);
 	
 	//Check if last variable is file(0) or directory(1)
-	lastVariabletype = checkFileOrDirectory();
+	lastVariabletype = checkFileOrDirectory(executionDirectory);
 
 	//Analyze type value possible errors
 	if(lastVariabletype == STAT_SYSTEM_CALL_FAIL) {
-		printf("simgrep: %s: No such file or directory\n", directory);
+		printf("simgrep: %s: No such file or directory\n", executionDirectory);
 		return STAT_SYSTEM_CALL_FAIL;
 	}
 
 	//Check the needed response to a certain input
 	if(((optionsRead == 0) || !checkRecursivity()) && (remainVariables == 1)) 
 		printf("Read from shell\n");
-	else if(checkRecursivity() && (lastVariabletype == DIRECTORY))
+	else if(checkRecursivity() && (lastVariabletype == DIRECTORY)) {
 		printf("Implies recursivity\n" );
+		searchDirectory(executionDirectory);
+	}
 	else if(lastVariabletype == FILE)
 		printf("Execute normally\n" );
 	else if((lastVariabletype == DIRECTORY) && !checkRecursivity())
-		printf("simgrep: %s: Is a directory\n",directory);
+		printf("simgrep: %s: Is a directory\n",executionDirectory);
 	
 	// ------------------------------------------------------------- //
 
