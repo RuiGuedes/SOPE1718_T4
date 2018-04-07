@@ -49,9 +49,35 @@ const char * setPattern(int argc, char * argv[], int remainVariables) {
 		return argv[argc - 2];
 }
 
+//CHECK
+const int checkFileName() {
+	return availableOptions[0];
+}
+
+//CHECK
+const int checkLines() {
+	return availableOptions[1];
+}
+
+//
 const int checkRecursivity() {
 	return availableOptions[2];
 }
+
+//CHECK
+const int checkCompleteWord() {
+	return availableOptions[3];
+}
+
+//CHECK
+const int checkICASE() {
+	return availableOptions[4];
+}
+
+const int checkLineNumber() {
+	return availableOptions[5];
+}
+
 
 void printOptionsState() {
 	for(int j = 0; j < 6; j++)
