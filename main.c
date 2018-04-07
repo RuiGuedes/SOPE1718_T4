@@ -1,12 +1,8 @@
 #include "Options.h"
 #include "searchDirectory.h"
 
-#define bufSize 1024
-
 #define INVALID_OPTIONS -1
 #define INVALID_FUNCTION_CALL -2
-
-const char * pattern;
 
 int main(int argc, char* argv[], char* envp[]) {
 
@@ -72,7 +68,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	if(((optionsRead == 0) || !checkRecursivity()) && (remainVariables == 1)) 
 		printf("Read from shell\n");
 	else if(checkRecursivity() && (lastVariabletype == DIRECTORY)) {
-		printf("Implies recursivity\n" );
+		//printf("Implies recursivity\n" );
 		searchDirectory(executionDirectory);
 	}
 	else if(lastVariabletype == FILE)
@@ -100,40 +96,3 @@ int main(int argc, char* argv[], char* envp[]) {
 	*/
 	return 0;
 }
-
-/*	SAMPLE CODE TO EXECUTE SIMGREP
-	
-	#include <regex.h>
-
-	FILE *fp;
-	char buf[bufSize];
-	int lineNumber = 1;
-	int    status;
-    regex_t    re;
-
-    if (regcomp(&re, pattern, REG_EXTENDED|REG_ICASE) != 0) {
-        return(0);      // Report error.
-    }
-
-
-	if( (fp = fopen(currentDirectory, "r")) == NULL) {
-		printf("Could not open file\n");
-		return 1;
-	}
-
-	while (fgets(buf, sizeof(buf), fp) != NULL)
-	{	
-    	buf[strlen(buf) - 1] = '\0'; // eat the newline fgets() stores
-    	
-    	status = regexec(&re, buf, (size_t) 0, NULL, 0);
-
-    	if(status == 0) {
-    		printf("%d:%s\n",lineNumber, buf);
-    	}
-
-    	lineNumber++;
-	}
-
-	regfree(&re);
-	fclose(fp);
-*/

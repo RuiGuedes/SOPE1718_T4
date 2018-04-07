@@ -2,33 +2,11 @@
 #include "searchFile.h"
 #include <dirent.h> 
 #include <stdio.h> 
-
-#define _XOPEN_SOURCE 500
-#include <ftw.h>
 #include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <signal.h>
 
-/*
-static int
-display_info(const char *fpath, const struct stat *sb,int typeflag, struct FTW *ftwbuf)
-{		
-	int pid = fork();
-
-	if(pid == 0) {
-
-	//printf("%s :: ", fpath);
-		if(typeflag == FTW_F)
-			searchDirectory(fpath);
-		else if(typeflag == FTW_D)
-			searchFile(fpath);
-
-		return -1;
-	}
-    return 0;           // To tell nftw() to continue
-}
-
-*/
 
 int checkFileOrDirectory(const char * directory) {
 
@@ -49,92 +27,57 @@ int checkFileOrDirectory(const char * directory) {
 
 int searchDirectory(const char * directory) {
 
-	/*
-
-	int flags = 0;
-
-	if (nftw(directory, display_info, 20, flags) == -1) {
-		perror("nftw");
-		exit(EXIT_FAILURE);
-	}
-
-	exit(EXIT_SUCCESS);
-
-	*/
-
 	DIR *d;
 	struct dirent *dir;
 	d = opendir(directory);
-	
+
+	//printf("%s\n",directory );
+
 	if (d) {
+		
 		while ((dir = readdir(d)) != NULL) {
-			
-			if(strcmp(dir->d_name,".") == 0)
-				continue;
-			else if(strcmp(dir->d_name,"..") == 0)
-				continue;
-			else {
+
+			pid_t pid;
+
+			if(strcmp(dir->d_name,".") && strcmp(dir->d_name,"..")) {
 				char newDir[1024];
+
 				strcpy(newDir,directory);
 				strcat(newDir,dir->d_name);
 
 				if(checkFileOrDirectory(newDir) == FILE) {
-					int pid = fork();
+					
+					pid = fork();
 
-					if(pid == 0){
-						searchFile(newDir);
-						return 0;
+					if(pid == 0) {
+						searchFile(newDir,pattern);
+						exit (0);
 					}
 				}
-				else if(checkFileOrDirectory(newDir) == DIRECTORY) {
-					int pid = fork();
+
+				strcat(newDir,"/");
+
+				if(checkFileOrDirectory(newDir) == DIRECTORY) {
+					
+					pid = fork();
 
 					if(pid == 0) {
 						searchDirectory(newDir);
-						return 0;
+						exit (0); 
 					}
-				}
-			}
-		}
-		pid_t wpid;
-		int status = 0;
-		while((wpid = wait(&status)) > 0);
 
-		closedir(d);
+				}
+
+			}
+			waitpid(pid,NULL,0);
+			
+		}
 	}
-	else
+	else 
 		perror ("Couldn't open the directory");
+
 	
-
-	/*
-		
-		while( exist content on actualDirectory ) {
-	
-			type = checkContentType();
-
-			if(type == DIRECTORY) {
-				
-				pid = fork();
-
-				if(pid == 0) {
-					exec( searchDirectory( new directory ) )
-				}
-	
-			}
-			else if(type == FILE) {
-				
-				pid = fork();
-
-				if(pid == 0) {
-					exec( searchFile( filename ) )
-				}
-			}
-		}
-
-		waitpid(null);
-
-	*/ 
-
+	closedir(d);
 
 	return 0;
 

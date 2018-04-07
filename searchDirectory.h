@@ -13,6 +13,7 @@
 //////////////////////
 
 const char * executionDirectory;
+const char * pattern;
 
 ////////////////////////////
 // Functions declarations //
