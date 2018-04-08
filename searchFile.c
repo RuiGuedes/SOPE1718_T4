@@ -31,6 +31,47 @@ int searchFile(const char * fileDirectory, const char * pattern) {
 
 }
 
+int doitfast(char * token, const char * pattern) {
+
+	int size = strlen(token);
+	int count = 0;
+	char * msg1 = "DASSADASd";
+
+	fflush(stdout);
+	printf("size %ld\n",strlen(msg1));
+	fflush(stdout);
+	printf("mss   %s\n",msg1 );
+	
+	while(size >= count) {
+		
+		//msg1 = (char *)malloc(strlen(pattern)/2);
+		
+
+		for(int i = count; (i < (count + strlen(pattern))) && (i < size); i++) {
+			char cToStr[2];
+			cToStr[1] = '\0';
+			cToStr[0] = *(token + i);
+			//printf("CHAR %c\n", *(token + i));
+			strcat(msg1,cToStr);
+			printf("mss   %s\n",msg1 );
+		}
+
+		if(strcasecmp(msg1,pattern) == 0) {
+
+			//printf(BOLDRED "%s", msg1);
+
+			count += strlen(pattern);
+		}
+		else {
+			//printf(DEFAULT "%c", *(token + count));
+			
+			count++;
+		}
+
+	}
+
+}
+
 int searchFileWord(const char * fileDirectory, const char * pattern, regex_t re) {
 
 	char buf[bufSize];
@@ -65,18 +106,9 @@ int searchFileWord(const char * fileDirectory, const char * pattern, regex_t re)
 				else 
 				{
 					if((word = strcasestr(token, pattern)) != NULL) {
-						
-						char * miniToken;
-						miniToken = strtok(token, word);
 
-						int printed = 1;
-						while(miniToken != NULL) {
 
-							printf(DEFAULT "%s", miniToken);
-							
-							miniToken = strtok(NULL, word);
-						}
-						printf(" ");
+						printf(GREEN "%s ", token);
 					}	
 					else 
 						printf(DEFAULT "%s ", token);
@@ -90,6 +122,7 @@ int searchFileWord(const char * fileDirectory, const char * pattern, regex_t re)
 
 					if((word = strstr(token,pattern)) != NULL) {
 
+						
 					}
 					else {
 						printf(DEFAULT "%s ", token);
