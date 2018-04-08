@@ -12,7 +12,6 @@
 #define INSUCESS -1
 #define EXISTS 1
 #define DONT_EXISTS 2
-
 #define FILE_OPEN_ERROR -2
 
 #define DEFAULT   "\033[0m"
@@ -39,7 +38,7 @@
 
 int searchFile(const char * fileDirectory, const char * pattern);
 int searchFileWord(const char * fileDirectory, const char * pattern, regex_t re);
-int searchFileWordByWord(const char * fileDirectory, const char * pattern, regex_t re);
-int checkPatternExistence(const char * fileDirectory, const char * pattern, regex_t re);
-int checkPatternPresence(char * textLine, const char * pattern);
+int searchFileCompleteWord(const char * fileDirectory, const char * pattern, regex_t re);
+int checkCompletePatternExistence(const char * fileDirectory, const char * pattern, regex_t re);
+int checkPatternExistence(char * textLine, const char * pattern);
 int analyzeWord(char * token, const char * pattern, int lineNumber);

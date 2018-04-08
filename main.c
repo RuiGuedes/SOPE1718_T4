@@ -1,5 +1,6 @@
 #include "Options.h"
 #include "searchDirectory.h"
+#include "searchFile.h"
 
 #define INVALID_OPTIONS -1
 #define INVALID_FUNCTION_CALL -2
@@ -67,12 +68,10 @@ int main(int argc, char* argv[], char* envp[]) {
 	//Check the needed response to a certain input
 	if(((optionsRead == 0) || !checkRecursivity()) && (remainVariables == 1)) 
 		printf("Read from shell\n");
-	else if(checkRecursivity() && (lastVariabletype == DIRECTORY)) {
-		//printf("Implies recursivity\n" );
+	else if(checkRecursivity() && (lastVariabletype == DIRECTORY))
 		searchDirectory(executionDirectory);
-	}
 	else if(lastVariabletype == FILE)
-		printf("Execute normally\n" );
+		searchFile(executionDirectory,pattern);
 	else if((lastVariabletype == DIRECTORY) && !checkRecursivity())
 		printf("simgrep: %s: Is a directory\n",executionDirectory);
 	
