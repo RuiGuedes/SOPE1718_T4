@@ -8,6 +8,9 @@
 #define bufSize 1024
 
 #define SUCESS 0
+#define EXISTS 1
+#define DONT_EXISTS 2
+
 #define FILE_OPEN_ERROR -1
 
 #define DEFAULT   "\033[0m"
@@ -34,4 +37,5 @@
 
 int searchFile(const char * fileDirectory, const char * pattern);
 int searchFileWordByWord(const char * fileDirectory, const char * pattern, regex_t re);
-int otherFunctionTest(const char * fileDirectory, const char * pattern, regex_t re);
+int checkPatternExistence(const char * fileDirectory, const char * pattern, regex_t re);
+int searchFileWord(const char * fileDirectory, const char * pattern, regex_t re);

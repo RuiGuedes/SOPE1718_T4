@@ -1,5 +1,6 @@
 #include "Options.h"
 #include "searchDirectory.h"
+#include <stdlib.h>
 
 #define INVALID_OPTIONS -1
 #define INVALID_FUNCTION_CALL -2
@@ -30,6 +31,47 @@ int main(int argc, char* argv[], char* envp[]) {
 				-> If file [CHECK]
 					* Execute normally
 	*/
+
+	char * msg;
+	msg = "PEDRORUIZITO";
+	int size = strlen(msg);
+	int count = 0;
+
+	while(size >= 0) {
+	if(*(msg + count) == 'R') {
+			
+			char * msg1;
+
+			msg1 = (char *) malloc(3);
+
+			for(int i = count; i < (count + 3); i++) {
+				char cToStr[2];
+				cToStr[1] = '\0';
+				cToStr[0] = *(msg + i);
+				strcat(msg1,cToStr);
+			}
+			
+			if(strcmp(msg1,"RUI") == 0) {
+				
+				printf("\n%s\n", msg1);
+				count += 3;
+				size -= 3;
+			}
+			else {
+				printf("%c", *(msg + count));
+				size--;
+				count++;
+			}
+			
+		}
+		else {
+			printf("%c", *(msg + count));
+			size--;
+			count++;
+		}
+	}
+
+	return 0;
 
 	if(argc < 2) {
 		printf("Usage: grep [OPTION]... PATTERN [FILE/DIRECTORY]...\n");
