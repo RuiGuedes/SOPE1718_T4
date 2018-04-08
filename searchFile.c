@@ -31,39 +31,19 @@ int searchFile(const char * fileDirectory, const char * pattern) {
 
 }
 
-int doitfast(char * token, const char * pattern) {
-
-	int size = strlen(token);
-	int count = 0;
-	
-	while(size >= count) {
-		
-		char var[50];
-						
-		memcpy(var,token + count, strlen(pattern));
-
-		if(strcasecmp(pattern,var) == 0) {
-
-			printf(BOLDRED "%s", var);
-
-			count += strlen(pattern);
-		}
-		else {
-			printf(DEFAULT "%c", *(token + count));
-			
-			count++;
-		}
-
-	}
-
-}
-
 int searchFileWord(const char * fileDirectory, const char * pattern, regex_t re) {
 
 	char buf[bufSize];
 	int lineNumber = 1;
 	int numberOfLines = 0;
-	int status, info;
+	int status, state;
+
+	if(checkPatternExistence(fileDirectory,pattern,re) == EXISTS) {
+		if(checkFileName()) {
+			printf(MAGENTA "%s\n" DEFAULT, fileDirectory);
+			return SUCESS;
+		}
+	}
 
 	FILE *file = fopen(fileDirectory, "r");
 	if(file == NULL) {
@@ -71,59 +51,48 @@ int searchFileWord(const char * fileDirectory, const char * pattern, regex_t re)
 		return FILE_OPEN_ERROR;
 	}
 
-	info = checkPatternExistence(fileDirectory,pattern,re);
-
 	while (fgets(buf, sizeof(buf), file) != NULL) {	
 
 		buf[strlen(buf) - 1] = '\0';
-		char * word;
+		
+		char textLine[bufSize];
+		memcpy(textLine,buf,strlen(buf));
 
-		const char s[2] = " ";
-		char * token;
-		token = strtok(buf, s);
+		if(checkPatternPresence(textLine,pattern) == SUCESS) {
 
-		while(token != NULL) {
+			numberOfLines++;
 
-			if(checkICASE()) 
-			{
-				if(strcasecmp(token,pattern) == 0) {
-					printf(BOLDRED "%s ", token);
+			const char s[2] = " ";
+			char * token;
+			token = strtok(buf, s);
+
+			if(!checkLines()) {
+				if(checkRecursivity()) {
+					printf(MAGENTA "%s" DEFAULT, fileDirectory);
+					printf(CYAN ":" DEFAULT);
 				}
-				else 
-				{
-					if((word = strcasestr(token, pattern)) != NULL) {
 
-						doitfast(token,pattern);
-					}	
-					else 
-						printf(DEFAULT "%s ", token);
+				if(checkLineNumber()) {
+					printf(GREEN "%d",lineNumber);
+					printf(CYAN ":");
 				}
 			}
-			else {
-				if(strcmp(token,pattern)) {
-					printf(BOLDRED "%s ", token);
-				}
-				else {
 
-					if((word = strstr(token,pattern)) != NULL) {
-
-						
-					}
-					else {
-						printf(DEFAULT "%s ", token);
-					}
-				} 
-
+			while(token != NULL) {
+				analyzeWord(token, pattern, lineNumber);
+				token = strtok(NULL, s);
 			}
 
-			token = strtok(NULL, s);
+			if(!checkLines())
+				printf("\n");
 		}
 
-		printf("\n");
 		lineNumber++;
 	}
 
 	if(checkLines()) {
+		printf(MAGENTA "%s" DEFAULT, fileDirectory);
+		printf(CYAN ":" DEFAULT);
 		printf(DEFAULT "%d\n",numberOfLines);
 	}
 
@@ -231,13 +200,105 @@ int checkPatternExistence(const char * fileDirectory, const char * pattern, rege
 
 	fclose(file);
 
-	if(checkLines()) {
-		printf(MAGENTA "%s", fileDirectory);
-		printf(CYAN ":");
-	}
-
 	if(state)
 		return EXISTS;
 	else
 		return DONT_EXISTS;
+}
+
+int checkPatternPresence(char * textLine, const char * pattern) {
+
+	const char s[2] = " ";
+	char * word;
+	char * token;
+
+	token = strtok(textLine, s);
+
+	while(token != NULL) {
+
+		if(checkICASE()) {
+			if((strcasecmp(token,pattern) == 0) || ((word = strcasestr(token, pattern)) != NULL))
+				return SUCESS;
+		}
+		else {
+			if((strcmp(token,pattern) == 0) || ((word = strstr(token,pattern)) != NULL))
+				return SUCESS;
+		}
+
+		token = strtok(NULL, s);
+	}
+
+	return INSUCESS;
+
+}
+
+int analyzeWord(char * token, const char * pattern, int lineNumber) {
+
+	char * word;
+
+	if(checkLines())
+		return SUCESS;
+
+	if(checkICASE()) {
+		if(strcasecmp(token,pattern) == 0) {
+			printf(BOLDRED "%s ", token);
+		}
+		else {	
+			if((word = strcasestr(token, pattern)) != NULL) {
+
+				int size = strlen(token);
+				int count = 0;
+
+				while(size >= count) {
+
+					char var[50];
+
+					memcpy(var,token + count, strlen(pattern));
+
+					if(strcasecmp(pattern,var) == 0) {
+						printf(BOLDRED "%s", var);
+						count += strlen(pattern);
+					}
+					else {
+						printf(DEFAULT "%c", *(token + count));
+						count++;
+					}
+				}
+			}	
+			else
+				printf(DEFAULT "%s ", token);
+		}
+	}
+	else {
+		if(strcmp(token,pattern) == 0) {
+			printf(BOLDRED "%s ", token);
+		}
+		else {
+			if((word = strstr(token,pattern)) != NULL) {
+
+				int size = strlen(token);
+				int count = 0;
+
+				while(size >= count) {
+
+					char var[50];
+
+					memcpy(var,token + count, strlen(pattern));
+
+					if(strcmp(pattern,var) == 0) {
+						printf(BOLDRED "%s", var);
+						count += strlen(pattern);
+					}
+					else {
+						printf(DEFAULT "%c", *(token + count));
+						count++;
+					}
+				}
+			}
+			else {
+				printf(DEFAULT "%s ", token);
+			}
+		} 
+	}
+	return SUCESS;
 }
