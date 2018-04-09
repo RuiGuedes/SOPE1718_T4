@@ -1,7 +1,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include "Options.h"
+#include "options.h"
 
 #define FILE 0
 #define DIRECTORY 1

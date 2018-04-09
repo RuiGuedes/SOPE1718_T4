@@ -1,4 +1,3 @@
-#include "Options.h"
 #include "searchDirectory.h"
 #include "searchFile.h"
 

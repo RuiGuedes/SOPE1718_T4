@@ -1,5 +1,5 @@
 #include "searchFile.h"
-#include "Options.h"
+#include "options.h"
 
 
 int searchFile(const char * fileDirectory, const char * pattern) {
