@@ -57,7 +57,7 @@ int searchFileWord(const char * fileDirectory, const char * pattern, regex_t re)
 
 			numberOfLines++;
 
-			const char s[11] = " .,-!?()/[]";
+			const char s[6] = " .,-!?";
 			char * token;
 			token = strtok(buf, s);
 
@@ -143,7 +143,7 @@ int searchFileCompleteWord(const char * fileDirectory, const char * pattern, reg
 				}
 			}
 
-			const char s[11] = " .,-!?()/[]";
+			const char s[6] = " .,-!?";
 			char * token;
 			token = strtok(buf, s);
 
@@ -245,7 +245,7 @@ int checkCompleteWordPresence(const char * fileDirectory, const char * pattern) 
 
 		buf[strlen(buf) - 1] = '\0';
 
-		const char s[11] = " .,-!?()/[]";
+		const char s[6] = " .,-!?";
 		char * token;
 
 		token = strtok(buf, s);
