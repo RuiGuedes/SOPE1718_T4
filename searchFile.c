@@ -1,7 +1,6 @@
 #include "searchFile.h"
 #include "options.h"
 
-
 int searchFile(const char * fileDirectory, const char * pattern) {
 
 	regex_t re;
@@ -57,12 +56,12 @@ int searchFileWord(const char * fileDirectory, const char * pattern, regex_t re)
 
 			numberOfLines++;
 
-			const char s[6] = " .,-!?";
+			const char s[7] = " .,-!?\n";
 			char * token;
 			token = strtok(buf, s);
 
 			if(!checkLines()) {
-				if(checkRecursivity()) {
+				if(checkRecursivity() && (checkFileOrDirectory(executionDirectory) == 1)) {
 					printf(MAGENTA "%s" DEFAULT, fileDirectory);
 					printf(CYAN ":" DEFAULT);
 				}
@@ -99,7 +98,7 @@ int searchFileWord(const char * fileDirectory, const char * pattern, regex_t re)
 int searchFileCompleteWord(const char * fileDirectory, const char * pattern, regex_t re) {
 
 	char buf[bufSize];
-	int lineNumber = 1;
+	long int lineNumber = 1;
 	int numberOfLines = 0;
 	int status, info;
 
@@ -132,18 +131,18 @@ int searchFileCompleteWord(const char * fileDirectory, const char * pattern, reg
 
 			if(!checkLines())
 			{	
-				if(checkRecursivity() && (info == EXISTS)) {
+				if(checkRecursivity() && (info == EXISTS)  && (checkFileOrDirectory(executionDirectory) == 1)) {
 					printf(MAGENTA "%s", fileDirectory);
 					printf(CYAN ":");
 				}
 
 				if(checkLineNumber()) {
-					printf(GREEN "%d", lineNumber);
+					printf(GREEN "%ld", lineNumber);
 					printf(DEFAULT ":");
 				}
 			}
 
-			const char s[6] = " .,-!?";
+			const char s[7] = " .,-!?\n";
 			char * token;
 			token = strtok(buf, s);
 
@@ -161,9 +160,8 @@ int searchFileCompleteWord(const char * fileDirectory, const char * pattern, reg
 
 			printf("\n");
 		}
+		lineNumber++;
 	}
-
-	lineNumber++;
 
 	if(checkLines()) {
 		printf(MAGENTA "%s" DEFAULT, fileDirectory);
@@ -245,7 +243,7 @@ int checkCompleteWordPresence(const char * fileDirectory, const char * pattern) 
 
 		buf[strlen(buf) - 1] = '\0';
 
-		const char s[6] = " .,-!?";
+		const char s[7] = " .,-!?\n";
 		char * token;
 
 		token = strtok(buf, s);

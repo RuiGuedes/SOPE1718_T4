@@ -1,5 +1,6 @@
 #include "searchDirectory.h"
 #include "searchFile.h"
+#include "readFromConsole.h"
 
 #define INVALID_OPTIONS -1
 #define INVALID_FUNCTION_CALL -2
@@ -66,7 +67,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
 	//Check the needed response to a certain input
 	if(((optionsRead == 0) || !checkRecursivity()) && (remainVariables == 1)) 
-		printf("Read from shell\n");
+		readFromConsole(pattern);
 	else if(checkRecursivity() && (lastVariabletype == DIRECTORY))
 		searchDirectory(executionDirectory);
 	else if(lastVariabletype == FILE)

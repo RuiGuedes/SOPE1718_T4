@@ -78,6 +78,22 @@ const int checkLineNumber() {
 	return availableOptions[5];
 }
 
+int checkFileOrDirectory(const char * directory) {
+
+	int file, dir;
+	struct stat status;
+
+	if(stat(directory, &status) < 0)
+		return -1;
+
+	file = S_ISREG(status.st_mode);
+	dir = S_ISDIR(status.st_mode);
+	
+	if(file && !dir)
+		return 0;
+	else if(!file && dir)
+		return 1;
+}
 
 void printOptionsState() {
 	for(int j = 0; j < 6; j++)

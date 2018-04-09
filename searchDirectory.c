@@ -7,7 +7,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 
-
+/*
 int checkFileOrDirectory(const char * directory) {
 
 	int file, dir;
@@ -24,6 +24,7 @@ int checkFileOrDirectory(const char * directory) {
 	else if(!file && dir)
 		return DIRECTORY;
 }
+*/
 
 int searchDirectory(const char * directory) {
 

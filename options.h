@@ -1,6 +1,19 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <dirent.h> 
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <signal.h>
+#include <sys/stat.h>
+
+//////////////////////
+// Global Variables //
+//////////////////////
+
+const char * executionDirectory;
+const char * pattern;
 
 ////////////////////////////
 // Functions declarations //
@@ -17,4 +30,5 @@ const int checkCompleteWord();
 const int checkICASE();
 const int checkLineNumber();
 
+int checkFileOrDirectory(const char * directory);
 void printOptionsState();
