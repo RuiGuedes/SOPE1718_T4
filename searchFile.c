@@ -33,7 +33,7 @@ int searchFileWord(const char * fileDirectory, const char * pattern, regex_t re)
 	int lineNumber = 1;
 	int numberOfLines = 0;
 
-	if(checkCompletePatternExistence(fileDirectory,pattern,re) == EXISTS) {
+	if(checkPatternExistenceOnFile(fileDirectory,pattern,re) == EXISTS) {
 		if(checkFileName()) {
 			printf(MAGENTA "%s\n" DEFAULT, fileDirectory);
 			return SUCESS;
@@ -53,11 +53,11 @@ int searchFileWord(const char * fileDirectory, const char * pattern, regex_t re)
 		char textLine[bufSize];
 		memcpy(textLine,buf,strlen(buf));
 
-		if(checkPatternExistence(textLine,pattern) == SUCESS) {
+		if(checkPatternExistenceOnString(textLine,pattern) == SUCESS) {
 
 			numberOfLines++;
 
-			const char s[2] = " ";
+			const char s[11] = " .,-!?()/[]";
 			char * token;
 			token = strtok(buf, s);
 
@@ -103,12 +103,14 @@ int searchFileCompleteWord(const char * fileDirectory, const char * pattern, reg
 	int numberOfLines = 0;
 	int status, info;
 
-	if(checkCompletePatternExistence(fileDirectory,pattern,re) == EXISTS) {
+	if(checkCompleteWordPresence(fileDirectory,pattern) == EXISTS) {
 		if(checkFileName()) {
 			printf(MAGENTA "%s\n" DEFAULT, fileDirectory);
 			return SUCESS;
 		}
 	}
+	else
+		return INSUCESS;
 
 	FILE *file = fopen(fileDirectory, "r");
 	if(file == NULL) {
@@ -116,7 +118,7 @@ int searchFileCompleteWord(const char * fileDirectory, const char * pattern, reg
 		return FILE_OPEN_ERROR;
 	}
 
-	info = checkCompletePatternExistence(fileDirectory,pattern,re);
+	info = checkCompleteWordPresence(fileDirectory,pattern);
 
 	while (fgets(buf, sizeof(buf), file) != NULL) {	
 
@@ -126,7 +128,6 @@ int searchFileCompleteWord(const char * fileDirectory, const char * pattern, reg
 
 		if(status == 0) {
 
-			printf("111\n");
 			numberOfLines++;
 
 			if(!checkLines())
@@ -142,14 +143,14 @@ int searchFileCompleteWord(const char * fileDirectory, const char * pattern, reg
 				}
 			}
 
-			const char s[2] = " ";
+			const char s[11] = " .,-!?()/[]";
 			char * token;
 			token = strtok(buf, s);
 
 			while(token != NULL) {
 
 				if(strcasecmp(token,pattern) == 0) {
-					printf(BOLDRED "%s ", token);
+					printf(BOLDRED "%s " DEFAULT, token);
 				}
 				else {
 					printf(DEFAULT "%s ", token);
@@ -174,7 +175,7 @@ int searchFileCompleteWord(const char * fileDirectory, const char * pattern, reg
 	return SUCESS;
 }
 
-int checkCompletePatternExistence(const char * fileDirectory, const char * pattern, regex_t re) {
+int checkPatternExistenceOnFile(const char * fileDirectory, const char * pattern, regex_t re) {
 
 	char buf[bufSize];
 	int status, state = -1;
@@ -205,7 +206,7 @@ int checkCompletePatternExistence(const char * fileDirectory, const char * patte
 		return DONT_EXISTS;
 }
 
-int checkPatternExistence(char * textLine, const char * pattern) {
+int checkPatternExistenceOnString(char * textLine, const char * pattern) {
 
 	const char s[2] = " ";
 	char * word;
@@ -228,6 +229,46 @@ int checkPatternExistence(char * textLine, const char * pattern) {
 	}
 
 	return INSUCESS;
+}
+
+int checkCompleteWordPresence(const char * fileDirectory, const char * pattern) {
+
+	char buf[bufSize];
+
+	FILE *file = fopen(fileDirectory, "r");
+	if(file == NULL) {
+		perror("Could not open file: ");
+		return FILE_OPEN_ERROR;
+	}
+
+	while (fgets(buf, sizeof(buf), file) != NULL) {	
+
+		buf[strlen(buf) - 1] = '\0';
+
+		const char s[11] = " .,-!?()/[]";
+		char * token;
+
+		token = strtok(buf, s);
+
+		while(token != NULL) {
+
+			if(checkICASE()) {
+				if(strcasecmp(token,pattern) == 0) {
+					return EXISTS;
+				}
+			}
+			else {
+				if(strcmp(token,pattern) == 0)
+					return EXISTS;
+			}
+
+			token = strtok(NULL, s);
+		}
+	}
+
+	fclose(file);
+
+	return DONT_EXISTS;
 }
 
 int analyzeWord(char * token, const char * pattern, int lineNumber) {
