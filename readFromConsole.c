@@ -45,7 +45,7 @@ int readFromConsole(const char * pattern) {
 				}
 				else {
 					while(token != NULL) {
-						analyzeWord(token, pattern, lineNumber);
+						analyzeWord(token, pattern);
 						token = strtok(NULL, s);
 					}
 				}

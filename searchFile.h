@@ -48,4 +48,4 @@ int checkPatternExistenceOnString(char * textLine, const char * pattern);
 int checkCompleteWordPresenceOnFile(const char * fileDirectory, const char * pattern);
 int checkCompleteWordPresenceOnTextLine(char * buf, const char * pattern);
 
-int analyzeWord(char * token, const char * pattern, int lineNumber);
+int analyzeWord(char * token, const char * pattern);

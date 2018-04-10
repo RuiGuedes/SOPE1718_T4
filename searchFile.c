@@ -78,7 +78,7 @@ int searchFileWord(const char * fileDirectory, const char * pattern, regex_t re)
 					printf(" ");
 				
 				count = 0;
-				analyzeWord(token, pattern, lineNumber);
+				analyzeWord(token, pattern);
 				token = strtok(NULL, s);
 			}
 
@@ -105,7 +105,7 @@ int searchFileCompleteWord(const char * fileDirectory, const char * pattern, reg
 	char buf[bufSize];
 	int lineNumber = 1;
 	int numberOfLines = 0;
-	int status, info;
+	int status, count = 1;
 
 	if(checkCompleteWordPresenceOnFile(fileDirectory,pattern) == EXISTS) {
 		if(checkFileName()) {
@@ -124,28 +124,23 @@ int searchFileCompleteWord(const char * fileDirectory, const char * pattern, reg
 
 	while (fgets(buf, sizeof(buf), file) != NULL) {	
 
-		buf[strlen(buf) - 1] = '\0';
+		char textLine[bufSize];
+		memcpy(textLine,buf,strlen(buf));
 
-		status = regexec(&re, buf, (size_t) 0, NULL, 0);
-
-		if(status == 0) {
+		if(checkCompleteWordPresenceOnTextLine(textLine,pattern) == EXISTS) {
 
 			numberOfLines++;
 
-			if(!checkLines())
-			{	
-				if(checkRecursivity()) {
-					printf(MAGENTA "%s", fileDirectory);
-					printf(CYAN ":");
-				}
-
-				if(checkLineNumber()) {
-					printf(GREEN "%d", lineNumber);
-					printf(CYAN ":");
-				}
+			if(!checkLines() && checkRecursivity()) {
+				printf(MAGENTA "%s", fileDirectory);
+				printf(CYAN ":");
 			}
 
-			int count = 1;
+			if(!checkLines() && checkLineNumber()) {
+				printf(GREEN "%d", lineNumber);
+				printf(CYAN ":");
+			}
+
 			const char s[2] = " ";
 			char * token;
 			token = strtok(buf, s);
@@ -154,27 +149,16 @@ int searchFileCompleteWord(const char * fileDirectory, const char * pattern, reg
 
 				if(!count && !checkLines())
 					printf(" ");
-				
-				count = 0;
+				else
+					count = 0;
 
-				if(checkICASE()){
-					if(strcasecmp(token,pattern) == 0)
-						printf(BOLDRED "%s" DEFAULT, token);
-					else 
-						printf(DEFAULT "%s", token);
-				}
-				else {
-					if(strcmp(token,pattern) == 0)
-						printf(BOLDRED "%s" DEFAULT, token);
-					else 
-						printf(DEFAULT "%s", token);
-				}
+				analyzeWord(token,pattern);
 
 				token = strtok(NULL, s);
 			}
 
-			printf("\n");
 		}
+
 		lineNumber++;
 	}
 
@@ -251,23 +235,34 @@ int checkPatternExistenceOnString(char * textLine, const char * pattern) {
 
 int checkCompleteWordPresenceOnTextLine(char * buf, const char * pattern) {
 
-	buf[strlen(buf) - 1] = '\0';
-
-	const char s[17] = " .,!?;:()/[]\"|'";
+	const char s[19] = " .,!?;:()/[]\"|'\n\0";
 	char * token;
+	char * word;
 
 	token = strtok(buf, s);
 
 	while(token != NULL) {
-
+		
 		if(checkICASE()) {
-			if(strcasecmp(token,pattern) == 0) {
-				return EXISTS;
+			if(checkCompleteWord()) {
+				if(strcasecmp(token,pattern) == 0) {
+					return EXISTS;
+				}
+			}
+			else {
+				if((strcasecmp(token,pattern) == 0) || ((word = strcasestr(token, pattern)) != NULL))
+					return EXISTS;
 			}
 		}
 		else {
-			if(strcmp(token,pattern) == 0)
-				return EXISTS;
+			if(checkCompleteWord()) {
+				if(strcmp(token,pattern) == 0)
+					return EXISTS;
+			}
+			else {
+				if((strcmp(token,pattern) == 0) || ((word = strstr(token,pattern)) != NULL))
+					return EXISTS;
+			}
 		}
 
 		token = strtok(NULL, s);
@@ -275,8 +270,6 @@ int checkCompleteWordPresenceOnTextLine(char * buf, const char * pattern) {
 
 	return DONT_EXISTS;
 }
-
-
 
 int checkCompleteWordPresenceOnFile(const char * fileDirectory, const char * pattern) {
 
@@ -318,7 +311,7 @@ int checkCompleteWordPresenceOnFile(const char * fileDirectory, const char * pat
 	return DONT_EXISTS;
 }
 
-int analyzeWord(char * token, const char * pattern, int lineNumber) {
+int analyzeWord(char * token, const char * pattern) {
 
 	char * word;
 
