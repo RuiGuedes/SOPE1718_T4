@@ -8,12 +8,12 @@ int readFromConsole() {
 
 		char buf[bufSize];
 		fgets (buf, sizeof(buf), stdin);
+		buf[strlen(buf) - 1] = '\0';
 
 		char textLine[bufSize];
 		memcpy(textLine,buf,strlen(buf));
-		textLine[strlen(textLine) - 1] = '\0';
 
-		if(checkInputPatternExistence(textLine) == EXISTS) {
+		if(checkPatternPresenceOnTextLine(textLine) == EXISTS) {
 
 			if(checkFileName()) {
 				printf(MAGENTA "(standard input)\n" DEFAULT);
@@ -25,70 +25,23 @@ int readFromConsole() {
 					printf(DEFAULT ":");
 				}
 
-				const char s[7] = " .,-!?\n";
+				const char s[2] = " ";
 				char * token;
 				token = strtok(buf, s);
 
-				if(checkCompleteWord()) {
+				while(token != NULL) {
 
-					while(token != NULL) {
+					analyzeAndPrintWord(token);
 
-						if(strcasecmp(token,pattern) == 0) {
-							printf(BOLDRED "%s " DEFAULT, token);
-						}
-						else {
-							printf(DEFAULT "%s ", token);
-						}
-
-						token = strtok(NULL, s);
-					}
+					token = strtok(NULL, s);
 				}
-				else {
-					while(token != NULL) {
-						analyzeAndPrintWord(token);
-						token = strtok(NULL, s);
-					}
-				}
+				
 				printf("\n");
 			}
 		}
 
 		lineNumber++;
 	}
+
 	return SUCESS;
-}
-
-int checkInputPatternExistence(char * input) {
-
-	const char s[7] = " .,-!?\n";
-	char * token;
-
-	token = strtok(input, s);
-
-	while(token != NULL) {
-		if(checkICASE()) {
-			if(checkCompleteWord()) {
-				if(strcasecmp(token,pattern) == 0)
-					return EXISTS;
-			}
-			else {
-				if(strcasestr(token, pattern) != NULL)
-					return EXISTS;
-			}
-		}
-		else {
-			if(checkCompleteWord()) {
-				if(strcmp(token,pattern) == 0)
-					return EXISTS;
-			}
-			else {
-				if(strstr(token,pattern) != NULL)
-					return EXISTS;
-			}
-		}
-
-		token = strtok(NULL, s);
-	}
-
-	return DONT_EXISTS;
 }
