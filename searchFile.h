@@ -40,6 +40,12 @@ int searchFile(const char * fileDirectory, const char * pattern);
 int searchFileWord(const char * fileDirectory, const char * pattern, regex_t re);
 int searchFileCompleteWord(const char * fileDirectory, const char * pattern, regex_t re);
 int checkPatternExistenceOnFile(const char * fileDirectory, const char * pattern, regex_t re);
+
+
 int checkPatternExistenceOnString(char * textLine, const char * pattern);
-int checkCompleteWordPresence(const char * fileDirectory, const char * pattern);
+
+
+int checkCompleteWordPresenceOnFile(const char * fileDirectory, const char * pattern);
+int checkCompleteWordPresenceOnTextLine(char * buf, const char * pattern);
+
 int analyzeWord(char * token, const char * pattern, int lineNumber);

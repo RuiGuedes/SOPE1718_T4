@@ -107,7 +107,7 @@ int searchFileCompleteWord(const char * fileDirectory, const char * pattern, reg
 	int numberOfLines = 0;
 	int status, info;
 
-	if(checkCompleteWordPresence(fileDirectory,pattern) == EXISTS) {
+	if(checkCompleteWordPresenceOnFile(fileDirectory,pattern) == EXISTS) {
 		if(checkFileName()) {
 			printf(MAGENTA "%s\n" DEFAULT, fileDirectory);
 			return SUCESS;
@@ -179,6 +179,10 @@ int searchFileCompleteWord(const char * fileDirectory, const char * pattern, reg
 	}
 
 	if(checkLines()) {
+		if(checkRecursivity()) {
+			printf(MAGENTA "%s", fileDirectory);
+			printf(CYAN ":");
+		}
 		printf(MAGENTA "%s" DEFAULT, fileDirectory);
 		printf(CYAN ":" DEFAULT);
 		printf(DEFAULT "%d\n",numberOfLines);
@@ -244,7 +248,37 @@ int checkPatternExistenceOnString(char * textLine, const char * pattern) {
 	return INSUCESS;
 }
 
-int checkCompleteWordPresence(const char * fileDirectory, const char * pattern) {
+
+int checkCompleteWordPresenceOnTextLine(char * buf, const char * pattern) {
+
+	buf[strlen(buf) - 1] = '\0';
+
+	const char s[17] = " .,!?;:()/[]\"|'";
+	char * token;
+
+	token = strtok(buf, s);
+
+	while(token != NULL) {
+
+		if(checkICASE()) {
+			if(strcasecmp(token,pattern) == 0) {
+				return EXISTS;
+			}
+		}
+		else {
+			if(strcmp(token,pattern) == 0)
+				return EXISTS;
+		}
+
+		token = strtok(NULL, s);
+	}
+
+	return DONT_EXISTS;
+}
+
+
+
+int checkCompleteWordPresenceOnFile(const char * fileDirectory, const char * pattern) {
 
 	char buf[bufSize];
 
