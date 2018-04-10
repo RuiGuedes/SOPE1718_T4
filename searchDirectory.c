@@ -51,7 +51,7 @@ int searchDirectory(const char * directory) {
 					pid = fork();
 
 					if(pid == 0) {
-						searchFile(newDir,pattern);
+						searchFile(newDir);
 						exit (0);
 					}
 				}

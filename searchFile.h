@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <regex.h>
 
 #define bufSize 1024
 
@@ -32,20 +31,14 @@
 #define BOLDCYAN    "\033[1m\033[36m"      /* Bold Cyan */
 #define BOLDWHITE   "\033[1m\033[37m"      /* Bold White */
 
+const char * fileDirectory;
+
 ////////////////////////////
 // Functions declarations //
 ////////////////////////////
 
-int searchFile(const char * fileDirectory, const char * pattern);
-int searchFileWord(const char * fileDirectory, const char * pattern, regex_t re);
-int searchFileCompleteWord(const char * fileDirectory, const char * pattern, regex_t re);
-int checkPatternExistenceOnFile(const char * fileDirectory, const char * pattern, regex_t re);
-
-
-int checkPatternExistenceOnString(char * textLine, const char * pattern);
-
-
-int checkCompleteWordPresenceOnFile(const char * fileDirectory, const char * pattern);
-int checkCompleteWordPresenceOnTextLine(char * buf, const char * pattern);
-
-int analyzeWord(char * token, const char * pattern);
+int searchFile(const char * directory);
+int searchFileWord();
+int checkPatternExistenceOnFile();
+int checkPatternPresenceOnTextLine(char * textLine);
+int analyzeAndPrintWord(char * word);

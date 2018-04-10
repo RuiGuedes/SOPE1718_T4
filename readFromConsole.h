@@ -6,5 +6,5 @@
 // Functions declarations //
 ////////////////////////////
 
-int readFromConsole(const char * pattern);
-int checkInputPatternExistence(char * input, const char * pattern);
+int readFromConsole();
+int checkInputPatternExistence(char * input);

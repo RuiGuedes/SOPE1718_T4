@@ -1,6 +1,6 @@
 #include "readFromConsole.h"
 
-int readFromConsole(const char * pattern) {
+int readFromConsole() {
 
 	int lineNumber = 1;
 
@@ -13,7 +13,7 @@ int readFromConsole(const char * pattern) {
 		memcpy(textLine,buf,strlen(buf));
 		textLine[strlen(textLine) - 1] = '\0';
 
-		if(checkInputPatternExistence(textLine,pattern) == EXISTS) {
+		if(checkInputPatternExistence(textLine) == EXISTS) {
 
 			if(checkFileName()) {
 				printf(MAGENTA "(standard input)\n" DEFAULT);
@@ -45,7 +45,7 @@ int readFromConsole(const char * pattern) {
 				}
 				else {
 					while(token != NULL) {
-						analyzeWord(token, pattern);
+						analyzeAndPrintWord(token);
 						token = strtok(NULL, s);
 					}
 				}
@@ -58,7 +58,7 @@ int readFromConsole(const char * pattern) {
 	return SUCESS;
 }
 
-int checkInputPatternExistence(char * input, const char * pattern) {
+int checkInputPatternExistence(char * input) {
 
 	const char s[7] = " .,-!?\n";
 	char * token;
