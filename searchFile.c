@@ -56,6 +56,7 @@ int searchFileWord(const char * fileDirectory, const char * pattern, regex_t re)
 
 			numberOfLines++;
 
+			int count = 1;
 			const char s[7] = " .,-!?\n";
 			char * token;
 			token = strtok(buf, s);
@@ -73,6 +74,10 @@ int searchFileWord(const char * fileDirectory, const char * pattern, regex_t re)
 			}
 
 			while(token != NULL) {
+				if(!count)
+					printf(" ");
+				
+				count = 0;
 				analyzeWord(token, pattern, lineNumber);
 				token = strtok(NULL, s);
 			}
@@ -131,28 +136,40 @@ int searchFileCompleteWord(const char * fileDirectory, const char * pattern, reg
 
 			if(!checkLines())
 			{	
-				if(checkRecursivity() && (info == EXISTS)  && (checkFileOrDirectory(executionDirectory) == 1)) {
+				if(checkRecursivity() && (info == EXISTS)) {
 					printf(MAGENTA "%s", fileDirectory);
 					printf(CYAN ":");
 				}
 
 				if(checkLineNumber()) {
-					printf(GREEN "%ld", lineNumber);
-					printf(DEFAULT ":");
+					printf(GREEN "%d", lineNumber);
+					printf(CYAN ":");
 				}
 			}
 
-			const char s[7] = " .,-!?\n";
+			int count = 1;
+			const char s[8] = " .,-!?\0";
 			char * token;
 			token = strtok(buf, s);
 
 			while(token != NULL) {
 
-				if(strcasecmp(token,pattern) == 0) {
-					printf(BOLDRED "%s " DEFAULT, token);
+				if(!count)
+					printf(" ");
+				
+				count = 0;
+
+				if(checkICASE()){
+					if(strcasecmp(token,pattern) == 0)
+						printf(BOLDRED "%s" DEFAULT, token);
+					else 
+						printf(DEFAULT "%s", token);
 				}
 				else {
-					printf(DEFAULT "%s ", token);
+					if(strcmp(token,pattern) == 0)
+						printf(BOLDRED "%s" DEFAULT, token);
+					else 
+						printf(DEFAULT "%s", token);
 				}
 
 				token = strtok(NULL, s);
@@ -278,7 +295,7 @@ int analyzeWord(char * token, const char * pattern, int lineNumber) {
 
 	if(checkICASE()) {
 		if(strcasecmp(token,pattern) == 0) {
-			printf(BOLDRED "%s ", token);
+			printf(BOLDRED "%s", token);
 		}
 		else {	
 			if((word = strcasestr(token, pattern)) != NULL) {
@@ -303,12 +320,12 @@ int analyzeWord(char * token, const char * pattern, int lineNumber) {
 				}
 			}	
 			else
-				printf(DEFAULT "%s ", token);
+				printf(DEFAULT "%s", token);
 		}
 	}
 	else {
 		if(strcmp(token,pattern) == 0) {
-			printf(BOLDRED "%s ", token);
+			printf(BOLDRED "%s", token);
 		}
 		else {
 			if((word = strstr(token,pattern)) != NULL) {
@@ -333,7 +350,7 @@ int analyzeWord(char * token, const char * pattern, int lineNumber) {
 				}
 			}
 			else {
-				printf(DEFAULT "%s ", token);
+				printf(DEFAULT "%s", token);
 			}
 		} 
 	}
