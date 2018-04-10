@@ -74,7 +74,7 @@ int searchFileWord(const char * fileDirectory, const char * pattern, regex_t re)
 			}
 
 			while(token != NULL) {
-				if(!count)
+				if(!count && !checkLines())
 					printf(" ");
 				
 				count = 0;
@@ -103,7 +103,7 @@ int searchFileWord(const char * fileDirectory, const char * pattern, regex_t re)
 int searchFileCompleteWord(const char * fileDirectory, const char * pattern, regex_t re) {
 
 	char buf[bufSize];
-	long int lineNumber = 1;
+	int lineNumber = 1;
 	int numberOfLines = 0;
 	int status, info;
 
@@ -122,8 +122,6 @@ int searchFileCompleteWord(const char * fileDirectory, const char * pattern, reg
 		return FILE_OPEN_ERROR;
 	}
 
-	info = checkCompleteWordPresence(fileDirectory,pattern);
-
 	while (fgets(buf, sizeof(buf), file) != NULL) {	
 
 		buf[strlen(buf) - 1] = '\0';
@@ -136,7 +134,7 @@ int searchFileCompleteWord(const char * fileDirectory, const char * pattern, reg
 
 			if(!checkLines())
 			{	
-				if(checkRecursivity() && (info == EXISTS)) {
+				if(checkRecursivity()) {
 					printf(MAGENTA "%s", fileDirectory);
 					printf(CYAN ":");
 				}
@@ -148,13 +146,13 @@ int searchFileCompleteWord(const char * fileDirectory, const char * pattern, reg
 			}
 
 			int count = 1;
-			const char s[8] = " .,-!?\0";
+			const char s[2] = " ";
 			char * token;
 			token = strtok(buf, s);
 
 			while(token != NULL) {
 
-				if(!count)
+				if(!count && !checkLines())
 					printf(" ");
 				
 				count = 0;
@@ -260,7 +258,7 @@ int checkCompleteWordPresence(const char * fileDirectory, const char * pattern) 
 
 		buf[strlen(buf) - 1] = '\0';
 
-		const char s[7] = " .,-!?\n";
+		const char s[17] = " .,!?;:()/[]\"|'";
 		char * token;
 
 		token = strtok(buf, s);
