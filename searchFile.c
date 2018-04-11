@@ -31,6 +31,7 @@ int searchFileWord() {
 	while (fgets(buf, sizeof(buf), file) != NULL) {	
 
 		buf[strlen(buf) - 1] = '\0';
+		count = 1;
 		
 		char textLine[bufSize];
 		memcpy(textLine,buf,strlen(buf));

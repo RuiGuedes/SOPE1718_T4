@@ -7,32 +7,31 @@
 #include <sys/wait.h>
 #include <signal.h>
 
-/*
-int checkFileOrDirectory(const char * directory) {
+void sigintHandler(int signum) {
+ 
+ 	char answer;
+ 	printf(" - Are you sure you want to terminate the program? (Y/N) ");
+ 	scanf("%c", &answer);
 
-	int file, dir;
-	struct stat status;
+ 	if(answer == 'Y')
+ 		exit(0);
 
-	if(stat(directory, &status) < 0)
-		return STAT_SYSTEM_CALL_FAIL;
-
-	file = S_ISREG(status.st_mode);
-	dir = S_ISDIR(status.st_mode);
-	
-	if(file && !dir)
-		return FILE;
-	else if(!file && dir)
-		return DIRECTORY;
 }
-*/
+
 
 int searchDirectory(const char * directory) {
 
 	DIR *d;
 	struct dirent *dir;
-	d = opendir(directory);
+	d = opendir(directory);	
 
-	//printf("%s\n",directory );
+	struct sigaction action;
+	action.sa_handler = sigintHandler;
+
+	if (sigaction(SIGINT, &action, NULL) < 0) {
+		perror ("Sigaction: ");
+		return 1;
+	}
 
 	if (d) {
 		
@@ -51,6 +50,7 @@ int searchDirectory(const char * directory) {
 					pid = fork();
 
 					if(pid == 0) {
+						signal(SIGINT, SIG_IGN);
 						searchFile(newDir);
 						exit (0);
 					}
@@ -63,6 +63,7 @@ int searchDirectory(const char * directory) {
 					pid = fork();
 
 					if(pid == 0) {
+						signal(SIGINT, SIG_IGN);
 						searchDirectory(newDir);
 						exit (0); 
 					}

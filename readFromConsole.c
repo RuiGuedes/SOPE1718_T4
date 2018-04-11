@@ -1,17 +1,14 @@
 #include "readFromConsole.h"
 
-
 void sigint_handler(int signum) {
  
  	char answer;
- 	restore();
- 	printf("Are you sure you want to terminate the program? (Y/N) ");
+ 	printf(" - Are you sure you want to terminate the program? (Y/N) ");
  	scanf("%c", &answer);
 
  	if(answer == 'Y')
  		exit(0);
 
- 	hideEcho();
 }
 
 
@@ -26,8 +23,6 @@ int readFromConsole() {
 		perror ("Sigaction: ");
 		return 1;
 	}
-
-	hideEcho();
 
 	while(1) {
 
@@ -67,6 +62,6 @@ int readFromConsole() {
 
 		lineNumber++;
 	}
-	restore();
+
 	return SUCESS;
 }

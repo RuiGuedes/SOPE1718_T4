@@ -95,6 +95,7 @@ int checkFileOrDirectory(const char * directory) {
 		return 1;
 }
 
+
 void restore() {
     tcsetattr(STDIN_FILENO, TCSANOW, &saved);
 }

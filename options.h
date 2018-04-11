@@ -34,5 +34,6 @@ const int checkICASE();
 const int checkLineNumber();
 
 int checkFileOrDirectory(const char * directory);
+
 void restore();
 void hideEcho();
