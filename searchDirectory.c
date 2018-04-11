@@ -7,17 +7,6 @@
 #include <sys/wait.h>
 #include <signal.h>
 
-void sigintHandler(int signum) {
- 
- 	char answer;
- 	printf(" - Are you sure you want to terminate the program? (Y/N) ");
- 	scanf("%c", &answer);
-
- 	if(answer == 'Y')
- 		exit(0);
-
-}
-
 
 int searchDirectory(const char * directory) {
 
@@ -25,13 +14,6 @@ int searchDirectory(const char * directory) {
 	struct dirent *dir;
 	d = opendir(directory);	
 
-	struct sigaction action;
-	action.sa_handler = sigintHandler;
-
-	if (sigaction(SIGINT, &action, NULL) < 0) {
-		perror ("Sigaction: ");
-		return 1;
-	}
 
 	if (d) {
 		

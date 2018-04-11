@@ -52,7 +52,7 @@ int readFromConsole() {
 				while(token != NULL) {
 
 					analyzeAndPrintWord(token);
-
+					printf(" ");
 					token = strtok(NULL, s);
 				}
 				

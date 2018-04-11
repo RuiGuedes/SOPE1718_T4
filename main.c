@@ -5,6 +5,19 @@
 #define INVALID_OPTIONS -1
 #define INVALID_FUNCTION_CALL -2
 
+
+void sigintHandler(int signum) {
+ 
+ 	char answer;
+ 	printf(" - Are you sure you want to terminate the program? (Y/N) ");
+ 	scanf("%c", &answer);
+
+ 	if(answer == 'Y')
+ 		exit(0);
+
+}
+
+
 int main(int argc, char* argv[], char* envp[]) {
 
 	/*
@@ -37,6 +50,15 @@ int main(int argc, char* argv[], char* envp[]) {
 		return INVALID_FUNCTION_CALL;
 	}
 
+	struct sigaction action;
+	action.sa_handler = sigintHandler;
+
+	if (sigaction(SIGINT, &action, NULL) < 0) {
+		perror ("Sigaction: ");
+		return 1;
+	}
+
+
 	int optionsRead = initOptions(argc,argv);
 	int remainVariables = argc - (optionsRead + 1);
 	int lastVariabletype;
@@ -68,8 +90,9 @@ int main(int argc, char* argv[], char* envp[]) {
 	//Check the needed response to a certain input
 	if(((optionsRead == 0) || !checkRecursivity()) && (remainVariables == 1)) 
 		readFromConsole(pattern);
-	else if(checkRecursivity() && (lastVariabletype == DIRECTORY))
+	else if(checkRecursivity() && (lastVariabletype == DIRECTORY)) {
 		searchDirectory(executionDirectory);
+	}
 	else if(lastVariabletype == FILE)
 		searchFile(executionDirectory);
 	else if((lastVariabletype == DIRECTORY) && !checkRecursivity())

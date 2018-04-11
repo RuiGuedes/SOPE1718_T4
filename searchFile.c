@@ -30,7 +30,7 @@ int searchFileWord() {
 
 	while (fgets(buf, sizeof(buf), file) != NULL) {	
 
-		buf[strlen(buf) - 1] = '\0';
+		buf[strlen(buf)] = '\0';
 		count = 1;
 		
 		char textLine[bufSize];
@@ -39,6 +39,7 @@ int searchFileWord() {
 		if(checkPatternPresenceOnTextLine(textLine) == EXISTS) {
 
 			numberOfLines++;
+
 
 			if(!checkLines()) {
 				if(checkRecursivity() && (checkFileOrDirectory(executionDirectory) == 1)) {
@@ -67,8 +68,6 @@ int searchFileWord() {
 				token = strtok(NULL, s);
 			}
 
-			if(!checkLines())
-				printf("\n");
 		}
 
 		lineNumber++;
@@ -120,7 +119,7 @@ int checkPatternExistenceOnFile() {
 
 int checkPatternPresenceOnTextLine(char * textLine) {
 
-	const char s[19] = " .,!?;:()/[]\"|'\n\0";
+	const char s[20] = " .,!?;:()/[]\"|'\r\n\0";
 	char * token;
 	char * word;
 
