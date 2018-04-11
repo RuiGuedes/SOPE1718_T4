@@ -1,7 +1,7 @@
 #include "options.h"
 
-int availableOptions[6] = {0};	// { -l , -c , -r , -w , -i , -n }
 int numberOptions = 0;
+int availableOptions[6] = {0};	// { -l , -c , -r , -w , -i , -n }
 char currentDiretory[1024];
 
 int initOptions(int argc, char * argv[]) {
@@ -95,9 +95,19 @@ int checkFileOrDirectory(const char * directory) {
 		return 1;
 }
 
-void printOptionsState() {
-	for(int j = 0; j < 6; j++)
-		printf("%d",availableOptions[j]);
+void restore() {
+    tcsetattr(STDIN_FILENO, TCSANOW, &saved);
+}
 
-	printf("\n");
+void hideEcho() {
+
+	struct termios attributes;
+
+    tcgetattr(STDIN_FILENO, &saved);
+    atexit(restore);
+
+    tcgetattr(STDIN_FILENO, &attributes);
+    attributes.c_lflag &= ~ ECHO;
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &attributes);
+	
 }

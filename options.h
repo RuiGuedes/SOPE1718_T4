@@ -7,6 +7,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <sys/stat.h>
+#include <termios.h>
 
 //////////////////////
 // Global Variables //
@@ -14,6 +15,8 @@
 
 const char * executionDirectory;
 const char * pattern;
+
+struct termios saved;
 
 ////////////////////////////
 // Functions declarations //
@@ -31,4 +34,5 @@ const int checkICASE();
 const int checkLineNumber();
 
 int checkFileOrDirectory(const char * directory);
-void printOptionsState();
+void restore();
+void hideEcho();
