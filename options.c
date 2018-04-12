@@ -83,7 +83,6 @@ const int checkLineNumber() {
 
 int checkFileOrDirectory(const char * directory) {
 
-	//printf("%s\n", directory);
 	int file, dir;
 	struct stat status;
 
@@ -97,22 +96,4 @@ int checkFileOrDirectory(const char * directory) {
 		return 0;
 	else if(!file && dir)
 		return 1;
-}
-
-
-void restore() {
-    tcsetattr(STDIN_FILENO, TCSANOW, &saved);
-}
-
-void hideEcho() {
-
-	struct termios attributes;
-
-    tcgetattr(STDIN_FILENO, &saved);
-    atexit(restore);
-
-    tcgetattr(STDIN_FILENO, &attributes);
-    attributes.c_lflag &= ~ ECHO;
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &attributes);
-	
 }

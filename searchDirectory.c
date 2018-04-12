@@ -49,20 +49,10 @@ int searchDirectory(const char * directory, int argc , char* argv[], int remainV
 				if(strcmp(newDir,executionDirectory) == 0)
 					continue;
 
-				if(checkFileOrDirectory(newDir) == FILE) {
-					pid = fork();
-
-					if(pid > 0) {
-						waitpid(pid,NULL,0);
-					}
-					else if(pid == 0) {
-						execvp("./simgrep",argNew);
-						exit (0);
-					}
-				}
-
+				if(checkFileOrDirectory(newDir) == FILE)
+					searchFile(newDir);
+					
 				strcat(newDir,"/");
-				argNew[argc - 2] = newDir;
 
 				if(checkFileOrDirectory(newDir) == DIRECTORY) {
 
@@ -72,8 +62,8 @@ int searchDirectory(const char * directory, int argc , char* argv[], int remainV
 						waitpid(pid,NULL,0);
 					}
 					else if(pid == 0) {
+						argNew[argc - 2] = newDir;
 						execvp("./simgrep",argNew);
-						printf("%s\n", argNew[argc - 2]);
 						exit (0); 
 					}
 

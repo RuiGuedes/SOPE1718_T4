@@ -8,12 +8,18 @@
 
 void sigintHandler(int signum) {
 
-	char answer;
-	printf(" - Are you sure you want to terminate the program? (Y/N) ");
-	scanf("%c", &answer);
+	if(getpid() == getpgid(getpid())) {
+		char answer;
+		printf(" - Are you sure you want to terminate the program? (Y/N) ");
+		scanf("%c", &answer);
 
 	if(answer == 'Y')
-		exit(0);
+		kill(-getpgid(getpid()),SIGTERM);
+	else
+		kill(getpid(),SIGCONT);
+	}
+	else
+		kill(getpid(),SIGTSTP);
 
 }
 
@@ -85,12 +91,6 @@ int main(int argc, char* argv[], char* envp[]) {
 		printf("simgrep: %s: No such file or directory\n", executionDirectory);
 		return STAT_SYSTEM_CALL_FAIL;
 	}
-
-	/////////////////////////////////////////
-
-	//printf("%s\n", executionDirectory);
-	
-	/////////////////////////////////////////
 
 	//Check the needed response to a certain input
 	if(((optionsRead == 0) || !checkRecursivity()) && (remainVariables == 1)) 
