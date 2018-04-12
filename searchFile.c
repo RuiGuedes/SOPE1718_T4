@@ -40,7 +40,6 @@ int searchFileWord() {
 
 			numberOfLines++;
 
-
 			if(!checkLines()) {
 				if(checkRecursivity() && (checkFileOrDirectory(executionDirectory) == 1)) {
 					printf(MAGENTA "%s" DEFAULT, fileDirectory);
@@ -67,7 +66,6 @@ int searchFileWord() {
 
 				token = strtok(NULL, s);
 			}
-
 		}
 
 		lineNumber++;

@@ -33,8 +33,11 @@ int initOptions(int argc, char * argv[]) {
 
 const char * setCurrentDirectory(int argc, char * argv[], int remainVariables) {
 	if(remainVariables == 1) {
-		if (getcwd(currentDiretory, sizeof(currentDiretory)) != NULL)
+		if (getcwd(currentDiretory, sizeof(currentDiretory)) != NULL) {
+			if(checkFileOrDirectory(currentDiretory) == 1)
+				strcat(currentDiretory,"/");
 			return currentDiretory;
+		}
 		else
 			return "(INVALID DIRETORY)";
 	}
@@ -80,6 +83,7 @@ const int checkLineNumber() {
 
 int checkFileOrDirectory(const char * directory) {
 
+	//printf("%s\n", directory);
 	int file, dir;
 	struct stat status;
 

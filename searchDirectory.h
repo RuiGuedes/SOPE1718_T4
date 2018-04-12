@@ -13,4 +13,4 @@
 // Functions declarations //
 ////////////////////////////
 
-int searchDirectory(const char * directory);
+int searchDirectory(const char * directory, int argc, char* argv[], int remainVariables);
