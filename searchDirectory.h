@@ -1,7 +1,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include "options.h"
+#include <fcntl.h>
+#include <stdio.h>
 
 #define DEFAULT   "\033[0m"
 

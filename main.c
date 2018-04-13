@@ -1,28 +1,31 @@
 #include "searchDirectory.h"
 #include "searchFile.h"
 #include "readFromConsole.h"
+#include "options.h"
 
 #define INVALID_OPTIONS -1
 #define INVALID_FUNCTION_CALL -2
 
+const char* registerExecutionFileName;
 
 void sigintHandler(int signum) {
+
+	printSignalRegister();
 
 	if(getpid() == getpgid(getpid())) {
 		char answer;
 		printf(" - Are you sure you want to terminate the program? (Y/N) ");
 		scanf("%c", &answer);
 
-	if(answer == 'Y')
-		kill(-getpgid(getpid()),SIGTERM);
-	else
-		kill(getpid(),SIGCONT);
+		if(answer == 'Y')
+			kill(-getpgid(getpid()),SIGTERM);
+		else
+			kill(getpid(),SIGCONT);
 	}
 	else
 		kill(getpid(),SIGTSTP);
 
 }
-
 
 int main(int argc, char* argv[], char* envp[]) {
 
@@ -55,6 +58,22 @@ int main(int argc, char* argv[], char* envp[]) {
 		printf("Usage: simgrep [OPTION]... PATTERN [FILE/DIRECTORY]...\n");
 		return INVALID_FUNCTION_CALL;
 	}
+	
+	if((registerExecutionFileName = getenv("LOGFILENAME")) == NULL) {
+		printf("You must define LOGFILENAME: export LOGFILENAME='name.txt'\n");
+		return INVALID_FUNCTION_CALL;
+	}
+	else if(getpid() == getpgid(getpid())) {
+		int pfd;
+		mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+		
+		if ((pfd = open(registerExecutionFileName, O_WRONLY | O_CREAT | O_TRUNC, mode)) == -1){
+			perror("Could not open execution register file: \n"); 
+			return INVALID_FUNCTION_CALL;
+		}
+		else 
+			close(pfd);
+	}
 
 	struct sigaction action;
 	action.sa_handler = sigintHandler;
@@ -64,7 +83,7 @@ int main(int argc, char* argv[], char* envp[]) {
 		return 1;
 	}
 
-	int optionsRead = initOptions(argc,argv);
+	int optionsRead = initOptions(argc,argv,registerExecutionFileName);
 	int remainVariables = argc - (optionsRead + 1);
 	int lastVariabletype;
 

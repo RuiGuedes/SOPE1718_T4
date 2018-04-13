@@ -1,4 +1,5 @@
 #include "readFromConsole.h"
+#include "options.h"
 
 void sigint_handler(int signum) {
  

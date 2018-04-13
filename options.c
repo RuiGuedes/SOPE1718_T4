@@ -4,7 +4,11 @@ int numberOptions = 0;
 int availableOptions[6] = {0};	// { -l , -c , -r , -w , -i , -n }
 char currentDiretory[1024];
 
-int initOptions(int argc, char * argv[]) {
+int initOptions(int argc, char * argv[], const char * registerFileName) {
+
+	registerExecutionFileName = registerFileName;
+
+	printCommand(argc,argv);
 
 	for(int i = 1; i < argc; i++) {
 		if(argv[i][0] == '-') {
@@ -80,6 +84,44 @@ const int checkICASE() {
 const int checkLineNumber() {
 	return availableOptions[5];
 }
+
+int printCommand(int argc, char * argv[]) {
+
+	FILE *executionRegister = fopen(registerExecutionFileName, "a+b");
+	if(executionRegister == NULL) {
+		perror("Could not open execution register file: \n");
+		return 1; 
+	}
+	else {
+		fprintf(executionRegister, "%.2f - %d - COMMAND ", ((double)clock()/CLOCKS_PER_SEC)*1000, getpid());
+	}
+
+
+	for(int i = 0; i < argc; i++) {
+		fprintf(executionRegister, "%s ",argv[i]);
+	}
+
+	fprintf(executionRegister,"\n");
+	fclose(executionRegister);
+	return 0;
+}
+
+
+int printSignalRegister() {
+
+	FILE *executionRegister = fopen(registerExecutionFileName, "a+b");
+	if(executionRegister == NULL) {
+		perror("Could not open execution register file: \n");
+		return 1; 
+	}
+	else {
+		fprintf(executionRegister, "%.2f - %d - %s\n", ((double)clock()/CLOCKS_PER_SEC)*1000, getpid(),"SIGNAL INT");
+		fclose(executionRegister);
+	}
+
+	return 0;
+}
+
 
 int checkFileOrDirectory(const char * directory) {
 

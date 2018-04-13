@@ -1,6 +1,7 @@
 #include "searchFile.h"
 #include "options.h"
 
+
 int searchFile(const char * directory) {
 
 	fileDirectory = directory;
@@ -26,6 +27,13 @@ int searchFileWord() {
 	if(file == NULL) {
 		perror("Could not open file: ");
 		return FILE_OPEN_ERROR;
+	}
+
+	FILE *executionRegister = fopen(registerExecutionFileName, "a+b");
+	if(executionRegister == NULL)
+		perror("Could not open execution register file: \n"); 
+	else {
+		fprintf(executionRegister, "%.2f - %d - %s%s\n", ((double)clock()/CLOCKS_PER_SEC)*1000, getpid(),"ABERTO ", fileDirectory);
 	}
 
 	while (fgets(buf, sizeof(buf), file) != NULL) {	
@@ -80,6 +88,9 @@ int searchFileWord() {
 	}
 
 	fclose(file);
+
+	fprintf(executionRegister, "%.2f - %d - %s%s\n", ((double)clock()/CLOCKS_PER_SEC)*1000, getpid(),"FECHADO ",fileDirectory);
+	fclose(executionRegister);
 
 	return SUCESS;
 }
