@@ -8,28 +8,8 @@
 
 const char* registerExecutionFileName;
 
-void sigintHandler(int signum) {
 
-	printSignalRegister();
-
-	if(getpid() == getpgid(getpid())) {
-		char answer;
-		printf(" - Are you sure you want to terminate the program? (Y/N) ");
-		scanf("%c", &answer);
-
-		if(answer == 'Y')
-			kill(-getpgid(getpid()),SIGTERM);
-		else
-			kill(getpid(),SIGCONT);
-	}
-	else
-		kill(getpid(),SIGTSTP);
-
-}
-
-int main(int argc, char* argv[], char* envp[]) {
-
-	/*
+/*
 		(1) simgrep pattern 
 				-> Read from shell  [CHECK]
 		
@@ -52,7 +32,29 @@ int main(int argc, char* argv[], char* envp[]) {
 					* Implies recursivity from the directory passed by parameter
 				-> If file [CHECK]
 					* Execute normally
-	*/
+*/
+
+
+void sigintHandler(int signum) {
+
+	printSignalRegister();
+
+	if(getpid() == getpgid(getpid())) {
+		char answer;
+		printf(BOLDRED " - Are you sure you want to terminate the program? (Y/N) " DEFAULT);
+		scanf("%c", &answer);
+
+		if((answer == 'Y') || (answer == 'y'))
+			kill(-getpgid(getpid()),SIGTERM);
+		else
+			kill(-getpgid(getpid()),SIGCONT);
+	}
+	else
+		kill(getpid(),SIGSTOP);
+
+}
+
+int main(int argc, char* argv[], char* envp[]) {
 
 	if(argc < 2) {
 		printf("Usage: simgrep [OPTION]... PATTERN [FILE/DIRECTORY]...\n");

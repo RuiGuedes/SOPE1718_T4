@@ -22,8 +22,10 @@ int searchFileWord() {
 			return SUCESS;
 		}
 	}
-	else 
-		return INSUCESS;
+	else {
+		if(checkLines() && !checkFileName())
+			return INSUCESS;
+	}
 
 	FILE *file = fopen(fileDirectory, "r");
 	if(file == NULL) {
@@ -91,7 +93,7 @@ int searchFileWord() {
 
 	fclose(file);
 
-	fprintf(executionRegister, "%.2f - %d - %s%s\n", ((double)clock()/CLOCKS_PER_SEC)*1000, getpid(),"FECHADO ",fileDirectory);
+	fprintf(executionRegister, "%.2f - %d - %s<b>%s</b>\n", ((double)clock()/CLOCKS_PER_SEC)*1000, getpid(),"FECHADO ",fileDirectory);
 	fclose(executionRegister);
 
 	return SUCESS;

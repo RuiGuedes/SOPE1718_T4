@@ -60,7 +60,7 @@ int searchDirectory(const char * directory, int argc , char* argv[], int remainV
 					pid = fork();
 
 					if(pid > 0) {
-						waitpid(pid,NULL,0);
+						waitpid(pid,NULL,WNOHANG);
 					}
 					else if(pid == 0) {
 						argNew[argc - 2] = newDir;
