@@ -100,7 +100,7 @@ int searchFileWord() {
 int checkPatternExistenceOnFile() {
 
 	char buf[bufSize];
-	int status, state = -1;
+	int status, state = 0;
 
 	FILE *file = fopen(fileDirectory, "r");
 	if(file == NULL) {
@@ -150,19 +150,21 @@ int checkPatternPresenceOnTextLine(char * textLine) {
 			}
 		}
 		else {
+
 			if(checkCompleteWord()) {
 				if(strcmp(token,pattern) == 0)
 					return EXISTS;
 			}
 			else {
-				if((strcmp(token,pattern) == 0) || ((word = strstr(token,pattern)) != NULL))
+
+				if((strcmp(token,pattern) == 0) || ((word = strstr(token,pattern)) != NULL)) {
 					return EXISTS;
+				}
 			}
 		}
 
 		token = strtok(NULL, s);
 	}
-
 	return DONT_EXISTS;
 }
 
