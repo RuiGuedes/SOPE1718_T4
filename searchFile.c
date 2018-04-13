@@ -22,6 +22,8 @@ int searchFileWord() {
 			return SUCESS;
 		}
 	}
+	else 
+		return INSUCESS;
 
 	FILE *file = fopen(fileDirectory, "r");
 	if(file == NULL) {

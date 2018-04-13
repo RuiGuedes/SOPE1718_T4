@@ -67,11 +67,8 @@ int searchDirectory(const char * directory, int argc , char* argv[], int remainV
 						execvp("./simgrep",argNew);
 						exit (0); 
 					}
-
 				}
-
 			}
-
 		}
 	}
 	else 

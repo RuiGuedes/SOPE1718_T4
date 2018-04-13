@@ -118,8 +118,11 @@ int main(int argc, char* argv[], char* envp[]) {
 		searchDirectory(executionDirectory,argc,argv,remainVariables);
 	else if(lastVariabletype == FILE) 
 		searchFile(executionDirectory);
-	else if((lastVariabletype == DIRECTORY) && !checkRecursivity())
+	else if((lastVariabletype == DIRECTORY) && !checkRecursivity()){
 		printf("simgrep: %s: Is a directory\n",executionDirectory);
+		if (checkLines())
+			printf("0\n");
+	}
 
 
 	return SUCESS;
