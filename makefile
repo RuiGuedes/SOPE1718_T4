@@ -11,4 +11,5 @@ simgrep: $(OBJ)
 
 clean: 
 	rm simgrep
+	rm $(LOGFILENAME)
 	rm -f $(OBJ) *.o

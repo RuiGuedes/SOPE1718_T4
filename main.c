@@ -41,13 +41,17 @@ void sigintHandler(int signum) {
 
 	if(getpid() == getpgid(getpid())) {
 		char answer;
+		char enter;
 		printf(" - Are you sure you want to terminate the program? (Y/N) ");
-		scanf("%c", &answer);
-
+		fflush(stdout);
+		
+		read(0,&answer,1);
+		read(0,&enter,1);
 		if((answer == 'Y') || (answer == 'y'))
 			kill(-getpgid(getpid()),SIGTERM);
 		else
 			kill(-getpgid(getpid()),SIGCONT);
+
 	}
 	else
 		kill(getpid(),SIGTSTP);

@@ -23,8 +23,15 @@ int searchFileWord() {
 		}
 	}
 	else {
-		if(checkLines() && !checkFileName())
-			printf("0\n");
+		if(checkLines() && !checkFileName()) {
+			if(checkRecursivity()) {
+				printf(MAGENTA "%s" DEFAULT, fileDirectory);
+				printf(CYAN ":" DEFAULT);
+				printf("0\n");
+			}
+			else
+				printf("0\n");
+		}
 
 		return INSUCESS;
 	}
@@ -95,7 +102,7 @@ int searchFileWord() {
 
 	fclose(file);
 
-	fprintf(executionRegister, "%.2f - %d - %s<b>%s</b>\n", ((double)clock()/CLOCKS_PER_SEC)*1000, getpid(),"FECHADO ",fileDirectory);
+	fprintf(executionRegister, "%.2f - %d - %s%s\n", ((double)clock()/CLOCKS_PER_SEC)*1000, getpid(),"FECHADO ",fileDirectory);
 	fclose(executionRegister);
 
 	return SUCESS;
