@@ -55,7 +55,7 @@ int searchFileWord() {
 		count = 1;
 		
 		char textLine[bufSize];
-		memcpy(textLine,buf,strlen(buf));
+		strcpy(textLine,buf);
 
 		if(checkPatternPresenceOnTextLine(textLine) == EXISTS) {
 
@@ -123,7 +123,7 @@ int checkPatternExistenceOnFile() {
 
 		buf[strlen(buf) - 1] = '\0';
 		char textLine[bufSize];
-		memcpy(textLine,buf,bufSize);
+		strcpy(textLine,buf);
 
 		if(checkPatternPresenceOnTextLine(textLine) == EXISTS) {
 			state = 1;
@@ -141,7 +141,7 @@ int checkPatternExistenceOnFile() {
 
 int checkPatternPresenceOnTextLine(char * textLine) {
 
-	const char s[20] = " .,!?;:()/[]\"|'\r\n\0";
+	const char s[20] = " .,!?;:()/[]|'\"\r\n\0";
 	char * token;
 	char * word;
 
@@ -176,6 +176,7 @@ int checkPatternPresenceOnTextLine(char * textLine) {
 
 		token = strtok(NULL, s);
 	}
+
 	return DONT_EXISTS;
 }
 
@@ -200,8 +201,8 @@ int analyzeAndPrintWord(char * word) {
 
 					char var[50];
 
-					memcpy(var,word + count, strlen(pattern));
-
+					strcpy(var,word + count);
+					
 					if(strcasecmp(pattern,var) == 0) {
 						printf(BOLDRED "%s", var);
 						count += strlen(pattern);
@@ -230,7 +231,7 @@ int analyzeAndPrintWord(char * word) {
 
 					char var[50];
 
-					memcpy(var,word + count, strlen(pattern));
+					strcpy(var,word + count);
 
 					if(strcmp(pattern,var) == 0) {
 						printf(BOLDRED "%s", var);
