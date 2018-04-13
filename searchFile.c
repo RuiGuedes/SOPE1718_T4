@@ -24,7 +24,9 @@ int searchFileWord() {
 	}
 	else {
 		if(checkLines() && !checkFileName())
-			return INSUCESS;
+			printf("0\n");
+
+		return INSUCESS;
 	}
 
 	FILE *file = fopen(fileDirectory, "r");

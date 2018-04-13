@@ -21,7 +21,6 @@ int searchDirectory(const char * directory, int argc , char* argv[], int remainV
 		argc ++;
 
 	char* argNew[argc];
-	const char * sv = "/home/rui/SOPE/SOPE1718_T4T1";
 
 	if(remainVariables == 1) {
 		for(int i = 0; i < (argc - 1); i++)
@@ -60,7 +59,7 @@ int searchDirectory(const char * directory, int argc , char* argv[], int remainV
 					pid = fork();
 
 					if(pid > 0) {
-						waitpid(pid,NULL,WNOHANG);
+						waitpid(pid,NULL,0);
 					}
 					else if(pid == 0) {
 						argNew[argc - 2] = newDir;

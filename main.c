@@ -41,7 +41,7 @@ void sigintHandler(int signum) {
 
 	if(getpid() == getpgid(getpid())) {
 		char answer;
-		printf(BOLDRED " - Are you sure you want to terminate the program? (Y/N) " DEFAULT);
+		printf(" - Are you sure you want to terminate the program? (Y/N) ");
 		scanf("%c", &answer);
 
 		if((answer == 'Y') || (answer == 'y'))
@@ -50,8 +50,7 @@ void sigintHandler(int signum) {
 			kill(-getpgid(getpid()),SIGCONT);
 	}
 	else
-		kill(getpid(),SIGSTOP);
-
+		kill(getpid(),SIGTSTP);
 }
 
 int main(int argc, char* argv[], char* envp[]) {
@@ -78,7 +77,14 @@ int main(int argc, char* argv[], char* envp[]) {
 	}
 
 	struct sigaction action;
+	sigset_t block_mask;
+
+	sigaddset (&block_mask, SIGINT);
+  	sigaddset (&block_mask, SIGCHLD);
+
 	action.sa_handler = sigintHandler;
+	action.sa_mask = block_mask;
+	action.sa_flags = 0;
 
 	if (sigaction(SIGINT, &action, NULL) < 0) {
 		perror ("Sigaction: ");
