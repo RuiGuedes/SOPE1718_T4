@@ -1,0 +1,39 @@
+/////////////
+// Server ///
+/////////////
+
+- Server function validation call
+- Create "Requests" FIFO
+- Create ticketlines threads
+
+## Main thread should be operational at this time
+
+- Main thread is responsible to fill the FIFO's buffer
+- Each ticketline must validate is own request
+- Implement the next 3 functions:
+	* isSeatFree()
+	* bookSeat()
+	* freeSeat()
+- Terminate main thread after < open_time >
+- Generate formatted exectution register < slog.txt >
+- Generate formatted exectution register < sbook.txt > :: Number of each seat reserved
+
+
+////////////
+// Client //
+////////////
+
+- Client function validation call
+- Create "answerXXXXX" FIFO
+- Send requests 
+- Waiting for an answer until timeout is reached
+- Generate formatted exectution register < clog.txt >
+- Generate formatted exectution register < cbook.txt >
+
+
+///////////
+// Extra //
+///////////
+
+- Check development notes in order to guarantee good code quality
+
