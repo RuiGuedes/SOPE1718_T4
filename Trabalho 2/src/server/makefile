@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -D_GNU_SOURCE -D_REENTRANT -lpthread
 DEPS = server.h 
-OBJ = server.o
+OBJ = server.o 
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)

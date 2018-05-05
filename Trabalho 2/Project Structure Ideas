@@ -23,8 +23,8 @@
 // Client //
 ////////////
 
-- Client function validation call
-- Create "answerXXXXX" FIFO
+- Client function validation call [CHECK]
+- Create "answerXXXXX" FIFO 
 - Send requests 
 - Waiting for an answer until timeout is reached
 - Generate formatted exectution register < clog.txt >
