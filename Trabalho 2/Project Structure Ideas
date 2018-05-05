@@ -2,9 +2,9 @@
 // Server ///
 /////////////
 
-- Server function validation call
-- Create "Requests" FIFO
-- Create ticketlines threads
+- Server function validation call [CHECK]
+- Create "Requests" FIFO [CHECK]
+- Create ticketlines threads [CHECK]
 
 ## Main thread should be operational at this time
 
