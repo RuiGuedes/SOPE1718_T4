@@ -1,15 +1,6 @@
 #include "room.h"
 
-int initRoom(int num_seats) {
-
-  //Initializes room variables
-  num_room_seats = num_seats;
-  seats = malloc((num_room_seats + 1)*sizeof(int));
-
-  return SUCESS;
-}
-
-int validateRequest(char * request) {
+int validateRequest(char * request, int num_room_seats) {
 
   //Local Variables
   Request request_info;
@@ -63,15 +54,18 @@ void initRequestStruct(char * request, Request * request_info) {
 }
 
 int isSeatFree(Seat * seats, int seatNum) {
+    if(seats[seatNum].occupied)
+      return OCCUPIED;
 
-  if((*seats))
+    return FREE;
 }
 
 void bookSeat(Seat * seats, int seatNum, int clientId) {
-
+  seats[seatNum].occupied = 1;
+  seats[seatNum].clientId = clientId;
 }
 
 void freeSeat(Seat * seats, int seatNum) {
-
-
+    seats[seatNum].occupied = 0;
+    seats[seatNum].clientId = 0;
 }

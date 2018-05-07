@@ -19,13 +19,14 @@ int main(int argc, char* argv[], char* envp[]) {
 
   //Initializes semaphores status
   if(initSem() == ERROR_INIT_SEM)
-  return ERROR_INIT_SEM;
+    return ERROR_INIT_SEM;
+
 
   //Initializes requests FIFO by creating and opening it
   if((requests_fd = initRequestsFifo()) == ERROR_CREATE_FIFO)
-  return ERROR_CREATE_FIFO;
+    return ERROR_CREATE_FIFO;
   else if(requests_fd == ERROR_OPEN_FIFO)
-  return ERROR_OPEN_FIFO;
+    return ERROR_OPEN_FIFO;
 
   //Creates num_ticket_offices threads
   createTicketOffices(atoi(argv[2]));
@@ -42,7 +43,7 @@ int main(int argc, char* argv[], char* envp[]) {
     if(sem_value == 1) {
       if(read(requests_fd, request, sizeof(request)) > 0) {
         //printf("Content : %s\n", request);
-        validateRequest(request);
+        validateRequest(request, num_room_seats);
         //sem_wait(&empty);
         //sem_post(&full);
       }
@@ -57,6 +58,7 @@ int main(int argc, char* argv[], char* envp[]) {
   if(close(requests_fd) == 1)
   printf("Error while closing requests FIFO\n");
 
+  free(seats);
 
   unlink("requests");
 
@@ -122,6 +124,21 @@ int initRequestsFifo() {
   }
 
   return fifo_fd;
+}
+
+int initRoom(int num_seats) {
+
+  //Initializes global variables
+  num_room_seats = num_seats;
+  seats = malloc((num_room_seats + 1)*sizeof(Seat));
+
+  //Ensure that all seats components are corretly initialized
+  for(int i = 0; i <= num_room_seats; i++) {
+    seats[i].occupied = 0;
+    seats[i].clientId = 0;
+  }
+
+  return SUCESS;
 }
 
 void * ticketOffice(void * arg) {

@@ -21,7 +21,9 @@
 #define IID 3
 #define NST 2
 #define MAX 1
+#define FREE 1
 #define SUCESS 0
+#define OCCUPIED 0
 
 
 //////////////////////
@@ -40,16 +42,12 @@ typedef struct Seats {
     int clientId;
 } Seat;
 
-int num_room_seats;
-struct Seat * seats;
-
 ///////////////
 // FUNCTIONS //
 ///////////////
 
-int initRoom(int num_room_seats);
-int validateRequest();
+int validateRequest(char * request, int num_room_seats);
 void initRequestStruct(char * request, Request * request_info);
-int isSeatFree(Seat * seats, int seatNum);
+int  isSeatFree(Seat * seats, int seatNum);
 void bookSeat(Seat * seats, int seatNum, int clientId);
 void freeSeat(Seat * seats, int seatNum);
