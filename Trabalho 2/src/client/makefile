@@ -7,8 +7,10 @@ OBJ = client.o
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 client: $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS)   
 
 clean: 
-	rm client
+	rm -f client
+	rm -f start
+	rm -f *ans*
 	rm -f $(OBJ) *.o

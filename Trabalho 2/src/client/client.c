@@ -11,10 +11,18 @@ int main(int argc, char* argv[], char* envp[]) {
 
   //Local variables declaration
   int fifo_fd;
+  char pathname[8], request[PIPE_BUF];
+
+  //Global variables initialization
+  initGlobalVariables(argv);
 
   //Creates dedicated FIFO
-  //if(createClientFifo() == ERROR_CREATE_FIFO)
-    //return ERROR_CREATE_FIFO;
+  if(createClientFifo(pathname) == ERROR_CREATE_FIFO)
+    return ERROR_CREATE_FIFO;
+
+  //Prepares request to be sent to the server
+  createFormattedRequest(request, argv);
+  printf("%s\n",request);
 
   //Opens requests fifo on write only mode
   //TODO Arranjar maneira de todos os ficheiros serem criados num determinado Local
@@ -24,23 +32,49 @@ int main(int argc, char* argv[], char* envp[]) {
     return ERROR_OPEN_FIFO;
   }
 
+  write(fifo_fd, request, sizeof(request));
+
+  close(fifo_fd);
+
+  //Destroys client dedicated FIFO
+  unlink(pathname);
 
   return(0);
 
 }
 
-int createClientFifo() {
+int createClientFifo(char * pathname) {
 
-  char pathname[8], pid[5];
+  char pid[5];
+  sprintf(pid, "%d", getpid());
 
   strcpy(pathname, "ans");
-  sprintf(pid, "%d", getpid());
   strcat(pathname,pid);
 
   if(mkfifo(pathname, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) == -1) {
     printf("Could not create <%s> FIFO\n", pathname);
     return ERROR_CREATE_FIFO;
   }
+
+  return SUCESS;
+}
+
+void initGlobalVariables(char * argv[]) {
+
+  time_out = atoi(argv[1]);
+  num_wanted_seats = atoi(argv[2]);
+  pref_seat_list = argv[3];
+
+}
+
+int createFormattedRequest(char * request, char * argv[]) {
+
+  char pid[5];
+  sprintf(pid,"%d",getpid());
+
+  strcat(request,pid); strcat(request," ");
+  strcat(request,argv[2]); strcat(request," ");
+  strcat(request,pref_seat_list); strcat(request, "\0");
 
   return SUCESS;
 }
