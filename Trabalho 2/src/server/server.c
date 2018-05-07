@@ -65,14 +65,14 @@ int main(int argc, char* argv[], char* envp[]) {
 int functionCallValidation(char * argv[]) {
 
   //Local variables declaration
-  int num_room_seats = atoi(argv[1]);
+  int num_seats = atoi(argv[1]);
   int num_ticket_offices = atoi(argv[2]);
   int open_time = atoi(argv[3]);
 
-  if((num_ticket_offices <= 0) || (num_room_seats <= 0) || (num_room_seats > MAX_ROOM_SEATS) || (open_time <= 0))
+  if((num_ticket_offices <= 0) || (num_seats <= 0) || (num_seats > MAX_ROOM_SEATS) || (open_time <= 0))
     return INVALID_FUNCTION_CALL;
 
-  return SUCESS;
+  return initRoom(num_seats);
 }
 
 void createTicketOffices(int num_ticket_offices) {

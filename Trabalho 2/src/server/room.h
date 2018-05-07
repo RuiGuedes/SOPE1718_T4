@@ -28,19 +28,28 @@
 // GLOBAL VARIABLES //
 //////////////////////
 
-struct Request {
+typedef struct Requests {
   int client_pid;
   int num_wanted_seats;
   int num_pref_seats;
   int pref_seat_list[MAX_ROOM_SEATS];
-};
+} Request;
 
-int NUM_ROOM_SEATS;
+typedef struct Seats {
+    int occupied;
+    int clientId;
+} Seat;
 
+int num_room_seats;
+struct Seat * seats;
 
 ///////////////
 // FUNCTIONS //
 ///////////////
 
+int initRoom(int num_room_seats);
 int validateRequest();
-void initRequestStruct(char * request, struct Request * request_info);
+void initRequestStruct(char * request, Request * request_info);
+int isSeatFree(Seat * seats, int seatNum);
+void bookSeat(Seat * seats, int seatNum, int clientId);
+void freeSeat(Seat * seats, int seatNum);
