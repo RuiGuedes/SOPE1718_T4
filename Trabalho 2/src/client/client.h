@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 ////////////
 // DEFINE //
@@ -27,6 +28,7 @@ char * pref_seat_list;
 // FUNCTIONS //
 ///////////////
 
-int  createClientFifo(char * pathname);
+int  initClientFifo(char * pathname);
+int  openRequestsFifo();
 int  createFormattedRequest(char * request, char * argv[]);
 void initGlobalVariables(char * argv[]);
