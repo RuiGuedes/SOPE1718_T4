@@ -1,6 +1,8 @@
 #include "client.h"
 
 //TODO Arranjar maneira de todos os ficheiros serem criados num determinado Local
+//TODO O resultado dos pedidos de reserva efetuados deve ser registado, pelos clientes, num ficheiro partilhado por todos eles, clog.txt.
+//TODO Devem também ser guardados no ficheiro cbook.txt (clients bookings) os números inteiros identificadores dos lugares (apenas estes) que foram reservados para todos os clientes
 
 int main(int argc, char* argv[], char* envp[]) {
 
@@ -38,24 +40,12 @@ int main(int argc, char* argv[], char* envp[]) {
   //Time which client will start waiting for an anwser
   clock_t begin = clock();
 
-  printf("BEGIN :: %ld\n",begin);
-
   //Main thread is responsible to listen client requests
   while( ((double)(clock() - begin) / CLOCKS_PER_SEC) < time_out) {
 
   }
 
-  printf("END :: %f\n",((double)(clock() - begin) / CLOCKS_PER_SEC));
-
-  //Close fifos
-  close(requests_fd);
-  close(client_fd);
-
-  //Destroys client dedicated FIFO
-  unlink(pathname);
-
-  return(0);
-
+  return terminateClientProg(pathname,requests_fd,client_fd);
 }
 
 int initClientFifo(char * pathname) {
@@ -81,6 +71,29 @@ int initClientFifo(char * pathname) {
   }
 
   return fifo_fd;
+}
+
+int  terminateClientProg(char * pathname, int requests_fd, int client_fd) {
+
+  //Closes requests fifo
+  if(close(requests_fd) == -1) {
+    printf("Error while closing requests fifo\n");
+    return ERROR_CLOSE_FIFO;
+  }
+
+  //Closes client dedicated fifo
+  if(close(client_fd) == -1) {
+    printf("Error while closing client fifo\n");
+    return ERROR_CLOSE_FIFO;
+  }
+
+  //Destroys client dedicated fifo
+  if(unlink(pathname) == -1) {
+    printf("Error while unlinking %s fifo\n", pathname);
+    return ERROR_UNLINK;
+  }
+
+  return SUCESS;
 }
 
 void initGlobalVariables(char * argv[]) {

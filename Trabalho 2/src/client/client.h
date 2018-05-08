@@ -16,6 +16,13 @@
 #define INVALID_FUNCTION_CALL -1
 #define ERROR_CREATE_FIFO -2
 #define ERROR_OPEN_FIFO -3
+#define ERROR_CLOSE_FIFO -4
+#define ERROR_UNLINK -5
+
+#define WIDTH_PID 5
+#define WIDTH_XXNN 5
+#define WIDTH_SEAT = 4
+
 
 //////////////////////
 // GLOBAL VARIABLES //
@@ -28,7 +35,8 @@ char * pref_seat_list;
 // FUNCTIONS //
 ///////////////
 
-int  initClientFifo(char * pathname);
 int  openRequestsFifo();
+int  initClientFifo(char * pathname);
+int  terminateClientProg(char * pathname, int requests_fd, int client_fd);
 int  createFormattedRequest(char * request, char * argv[]);
 void initGlobalVariables(char * argv[]);
