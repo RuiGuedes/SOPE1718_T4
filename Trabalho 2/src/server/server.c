@@ -16,6 +16,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
   //Local variables declaration
   int requests_fd;
+  pthread_t thread_ids[atoi(argv[2])];
 
   //Initializes semaphores status
   if(initSem() == ERROR_INIT_SEM)
@@ -35,10 +36,12 @@ int main(int argc, char* argv[], char* envp[]) {
     return FILE_OPEN_ERROR;
 
   //Creates num_ticket_offices threads
-  createTicketOffices(atoi(argv[2]));
+  createTicketOffices(thread_ids, atoi(argv[2]));
 
   //Time in which ticket offices open
   clock_t begin = clock();
+
+  printf("WAITING FOR REQUESTS\n");
 
   //Main thread is responsible to listen client requests
   while( ((double)(clock() - begin) / CLOCKS_PER_SEC) < atoi(argv[3])) {
@@ -59,12 +62,11 @@ int main(int argc, char* argv[], char* envp[]) {
   //Terminates all threads after they execute their own requests
   terminateAllThreads(atoi(argv[2]));
 
+
   //Wait's for all threads
-  int count[atoi(argv[2])];
-  for(int i = 1; i <= atoi(argv[2]); i++) {
-      count[i] = i;
-      pthread_join(count[i], NULL);
-  }
+  for(int i = 1; i <= atoi(argv[2]); i++)
+      pthread_join(thread_ids[i], NULL);
+
 
   //Prints information on sbook_file
   printServerBookings();
@@ -203,17 +205,17 @@ int openSLOGTextFile() {
     return SUCESS;
 }
 
-void createTicketOffices(int num_ticket_offices) {
+void createTicketOffices(pthread_t * thread_ids, int num_ticket_offices) {
 
   // Thread id’s
   int count[num_ticket_offices];
-  pthread_t thread_ids[num_ticket_offices];
 
   // Creates num_ticket_offices threads
   for (int k=1; k <= num_ticket_offices; k++) {
     count[k] = k;
     pthread_create(&thread_ids[k], NULL, ticketOffice, &count[k]);
   }
+
 }
 
 void terminateAllThreads(int num_threads) {
@@ -343,7 +345,7 @@ void sendAnswerToClient(Request request_info, int * reserved_seats) {
 
   //Initializes client fifo name
   sprintf(pid, "%d", request_info.client_pid);
-  sprintf(pid, "%d", request_info.validation_return_value);
+  sprintf(return_value, "%d", request_info.validation_return_value);
 
   strcpy(answer, "");
   strcat(answer,pid); strcat(answer," ");
@@ -353,15 +355,19 @@ void sendAnswerToClient(Request request_info, int * reserved_seats) {
 
       for(int i = 0; i < request_info.num_wanted_seats; i++) {
         sprintf(seat_number, "%d", reserved_seats[i]);
-        strcat(answer,seat_number); strcat(answer," ");
+        strcat(answer,seat_number);
+        strcat(answer," ");
       }
   }
 
   //Appends new line character
-  strcat(answer,"\n");
+  strcat(answer,"\0");
 
+  printf("ANSWER GIVEN :: $%s$\n", answer);
   //Writes answer to client fifo
   write(client_fifo_fd, answer, sizeof(answer));
+
+  DELAY(DELAYED_TIME);
 
   close(client_fifo_fd);
 }

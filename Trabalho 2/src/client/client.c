@@ -31,9 +31,9 @@ int main(int argc, char* argv[], char* envp[]) {
   if((requests_fd = openRequestsFifo()) == ERROR_OPEN_FIFO)
     return ERROR_OPEN_FIFO;
 
-  printf("ANTES");
-  openCLOGTextFile();
-printf("DEPOIS");
+
+  //openCLOGTextFile();
+
   //Writes request to requests fifo
   write(requests_fd, request, sizeof(request));
 
@@ -43,6 +43,7 @@ printf("DEPOIS");
   //Main thread is responsible to listen client requests
   while( ((double)(clock() - begin) / CLOCKS_PER_SEC) < time_out) {
     if(read(client_fd, answer, sizeof(answer)) > 0) {
+        printf("RECEIVED ANSWER :: $%s$\n", answer);
         initializeAnswerStruct(answer);
         printClientLogging();
         printClientBookings();
@@ -94,7 +95,7 @@ int initClientFifo(char * pathname) {
 
 int createFormattedRequest(char * request, char * argv[]) {
 
-  char pid[5];
+  char pid[WIDTH_PID];
   sprintf(pid,"%d",getpid());
 
   strcat(request,pid); strcat(request," ");
@@ -149,32 +150,14 @@ int openRequestsFifo() {
   return fifo_fd;
 }
 
-int openCLOGTextFile() {
-
-  if((clog_file = fopen("clog.txt", "w")) == NULL) {
-    perror("Could not open file: ");
-    return FILE_OPEN_ERROR;
-  }
-
-  return SUCESS;
-}
-
 int printClientLogging() {
 
   //Local variables
-  int tmp_fd;
   char leadingZeros_pid[10];
   char leadingZeros_xxnn[10];
   char leadingZeros_seat[10];
 
-  if ((tmp_fd = open("clog.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
-    perror("Could not open server logging text file: \n");
-    return FILE_OPEN_ERROR;
-  }
-  else
-    close(tmp_fd);
-
-  if((clog_file = fopen("clog.txt", "w")) == NULL) {
+  if((clog_file = fopen("clog.txt", "a")) == NULL) {
     perror("Could not open file: ");
     return FILE_OPEN_ERROR;
   }
@@ -183,6 +166,9 @@ int printClientLogging() {
   leadingZeros(leadingZeros_pid,WIDTH_PID,"d ");
   leadingZeros(leadingZeros_xxnn,(WIDTH_XXNN - 1)/2,"d");
   leadingZeros(leadingZeros_seat,WIDTH_SEAT,"d ");
+
+  printf("PID :: %d\n", request_answer.client_pid);
+  printf("RETURN :: %d\n", request_answer.validation_return_value);
 
   //Prints result of request
   if(request_answer.validation_return_value != 0) {
@@ -231,7 +217,7 @@ int printClientBookings() {
   //Local variables
   char leadingZeros_seat[10];
 
-  if((cbook_file = fopen("cbook.txt", "w")) == NULL) {
+  if((cbook_file = fopen("cbook.txt", "a")) == NULL) {
     perror("Could not open file: ");
     return FILE_OPEN_ERROR;
   }
@@ -287,8 +273,8 @@ int terminateClientProg(char * pathname, int requests_fd, int client_fd) {
     return ERROR_UNLINK;
   }
 
-  fclose(clog_file);
-  free(request_answer.reserved_seats);
+  //fclose(clog_file);
+  //free(request_answer.reserved_seats);
 
   return SUCESS;
 }

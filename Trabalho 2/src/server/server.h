@@ -40,7 +40,7 @@ int openClientFifo(Request request_info);
 int initRoom(int num_room_seats);
 int initClientFiles();
 int functionCallValidation(char * argv[]);
-void createTicketOffices(int num_ticket_offices);
+void createTicketOffices(pthread_t * thread_ids, int num_ticket_offices);
 void terminateAllThreads(int num_threads);
 void * ticketOffice(void * arg);
 void sendAnswerToClient(Request request_info, int * reserved_seats);

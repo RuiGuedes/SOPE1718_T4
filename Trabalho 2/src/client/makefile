@@ -11,6 +11,5 @@ client: $(OBJ)
 
 clean: 
 	rm -f client
-	rm -f start
 	rm -f *ans*
 	rm -f $(OBJ) *.o
