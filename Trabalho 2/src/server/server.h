@@ -10,17 +10,23 @@
 #define ERROR_CREATE_FIFO -2
 #define ERROR_OPEN_FIFO -3
 #define ERROR_INIT_SEM -4
-
-//#define INIT_SEATS(X) Seat * X = {X->occupied = 0, X->clientId = 0}
+#define FILE_OPEN_ERROR -5
 
 //////////////////////
 // GLOBAL VARIABLES //
 //////////////////////
 
-int num_room_seats;
 Seat * seats;
-sem_t empty, full;
+
+int num_room_seats;
+int num_room_seats_remaining;
 char request[PIPE_BUF];
+
+FILE * slog_file;
+int terminate = 0;
+
+sem_t empty, full;
+pthread_cond_t * room_access_cond;
 
 ///////////////
 // FUNCTIONS //
@@ -28,7 +34,11 @@ char request[PIPE_BUF];
 
 int initSem();
 int initRequestsFifo();
+int openSLOGTextFile();
 int initRoom(int num_room_seats);
 int functionCallValidation(char * argv[]);
 void createTicketOffices(int num_ticket_offices);
+void terminateAllThreads(int num_threads);
 void * ticketOffice(void * arg);
+void printRequestInfo(int tid, Request request_info,int * reserved_seats);
+int printServerBookings();

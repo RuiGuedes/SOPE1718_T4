@@ -1,26 +1,30 @@
 #include "room.h"
 
-int validateRequest(char * request, int num_room_seats) {
+Request validateRequest(char * request, int num_room_seats) {
 
   //Local Variables
   Request request_info;
   initRequestStruct(request, &request_info);
 
+  //Initializes global variables
+  pthread_mutex_init (&access_lock, NULL);
+  pthread_mutex_init (&seats_lock, NULL);
+
   //Validate num_wanted_seats
   if((request_info.num_wanted_seats < 1) || (request_info.num_wanted_seats > MAX_CLI_SEATS))
-    return MAX;
+    request_info.validation_return_value = MAX;
 
   //Validate num_pref_seats
   if((request_info.num_pref_seats < request_info.num_wanted_seats) || (request_info.num_pref_seats > MAX_CLI_SEATS))
-    return NST;
+    request_info.validation_return_value = NST;
 
   //Validate pref_seat_list values
   for(int i = 0; i < request_info.num_pref_seats; i++) {
     if((request_info.pref_seat_list[i] < 1) || (request_info.pref_seat_list[i] > num_room_seats))
-      return IID;
+      request_info.validation_return_value = IID;
   }
 
-  return SUCESS;
+  return request_info;
 }
 
 void initRequestStruct(char * request, Request * request_info) {
@@ -54,18 +58,41 @@ void initRequestStruct(char * request, Request * request_info) {
 }
 
 int isSeatFree(Seat * seats, int seatNum) {
-    if(seats[seatNum].occupied)
-      return OCCUPIED;
 
-    return FREE;
+  int return_value = FREE;
+
+  pthread_mutex_lock(&seats_lock);
+
+  if(seats[seatNum].occupied)
+    return_value = OCCUPIED;
+
+  DELAY(DELAYED_TIME);
+
+  pthread_mutex_unlock(&seats_lock);
+
+  return return_value;
 }
 
 void bookSeat(Seat * seats, int seatNum, int clientId) {
+
+  pthread_mutex_lock(&seats_lock);
+
   seats[seatNum].occupied = 1;
   seats[seatNum].clientId = clientId;
+
+  DELAY(DELAYED_TIME);
+
+  pthread_mutex_unlock(&seats_lock);
 }
 
 void freeSeat(Seat * seats, int seatNum) {
-    seats[seatNum].occupied = 0;
-    seats[seatNum].clientId = 0;
+
+  pthread_mutex_lock(&seats_lock);
+
+  seats[seatNum].occupied = 0;
+  seats[seatNum].clientId = 0;
+
+  DELAY(DELAYED_TIME);
+
+  pthread_mutex_unlock(&seats_lock);
 }

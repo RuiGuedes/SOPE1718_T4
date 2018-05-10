@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -D_GNU_SOURCE -D_REENTRANT -lpthread
+CFLAGS = -D_GNU_SOURCE -D_REENTRANT -lpthread -lrt
 DEPS = server.h room.h
 OBJ = server.o room.o
 
