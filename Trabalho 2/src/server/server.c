@@ -27,6 +27,9 @@ int main(int argc, char* argv[], char* envp[]) {
   else if(requests_fd == ERROR_OPEN_FIFO)
     return ERROR_OPEN_FIFO;
 
+  if(initClientFiles() < 0)
+    return FILE_OPEN_ERROR;
+
   //Opens slog text file
   if(openSLOGTextFile() == FILE_OPEN_ERROR)
     return FILE_OPEN_ERROR;
@@ -51,23 +54,44 @@ int main(int argc, char* argv[], char* envp[]) {
     }
   }
 
+  printf("NO MORE REQUESTS\n");
+
   //Terminates all threads after they execute their own requests
   terminateAllThreads(atoi(argv[2]));
+
+  //Wait's for all threads
+  int count[atoi(argv[2])];
+  for(int i = 1; i <= atoi(argv[2]); i++) {
+      count[i] = i;
+      pthread_join(count[i], NULL);
+  }
+
+  //Prints information on sbook_file
+  printServerBookings();
 
   //Closes and destroys "requests" FIFO
   if(close(requests_fd) == 1)
     printf("Error while closing requests FIFO\n");
 
+  //Destroys requests fifo
   unlink("requests");
 
-  printServerBookings();
+  //Destroys semaphores
+  sem_close(&empty);
+  sem_close(&full);
 
+  //Destroys mutexes
+  pthread_mutex_destroy (&access_lock);
+  pthread_mutex_destroy (&seats_lock);
+
+  //Closes slog_file
   fclose(slog_file);
+
+  //Liberta o espaço de seats e de room access
   free(seats);
+  free(room_access_cond);
 
-  // TODO verificar qual a melhor chamada para colocar aqui -- pthread_exit implies that the unlink requests doesnt work
-  pthread_exit(NULL);
-
+  printf("MAIN THREAD ENDED\n");
 }
 
 int functionCallValidation(char * argv[]) {
@@ -83,27 +107,23 @@ int functionCallValidation(char * argv[]) {
   return initRoom(num_seats);
 }
 
-void createTicketOffices(int num_ticket_offices) {
+int initRoom(int num_seats) {
 
-  // Thread id’s
-  int count[num_ticket_offices];
-  pthread_t thread_ids[num_ticket_offices];
+  //Initializes global variables
+  num_room_seats = num_seats;
+  num_room_seats_remaining = num_room_seats;
+  seats = malloc((num_room_seats + 1)*sizeof(Seat));
+  room_access_cond = malloc((num_room_seats + 1)*sizeof(pthread_cond_t));
 
-  // Creates num_ticket_offices threads
-  for (int k=1; k <= num_ticket_offices; k++) {
-    count[k] = k;
-    pthread_create(&thread_ids[k], NULL, ticketOffice, &count[k]);
+  //Ensure that both all seats and room_access_cond components are corretly initialized
+  for(int i = 0; i <= num_room_seats; i++) {
+    seats[i].occupied = 0;
+    seats[i].clientId = 0;
+    seats[i].access_status = 0;
+    pthread_cond_init(&room_access_cond[i], NULL);
   }
-}
 
-void terminateAllThreads(int num_threads) {
-
-  //Change global variable
-  terminate = 1;
-
-  for(int i = 0; i < num_threads; i++)
-    sem_post(&full);
-
+  return SUCESS;
 }
 
 int initSem() {
@@ -142,6 +162,28 @@ int initRequestsFifo() {
   return fifo_fd;
 }
 
+int initClientFiles() {
+
+  //Local variables
+  int tmp_fd;
+
+  if ((tmp_fd = open("../client/clog.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
+    perror("Could not open server logging text file: \n");
+    return FILE_OPEN_ERROR;
+  }
+  else
+    close(tmp_fd);
+
+  if ((tmp_fd = open("../client/cbook.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
+    perror("Could not open server logging text file: \n");
+    return FILE_OPEN_ERROR;
+  }
+  else
+    close(tmp_fd);
+
+  return SUCESS;
+}
+
 int openSLOGTextFile() {
 
     int tmp_fd;
@@ -154,30 +196,34 @@ int openSLOGTextFile() {
       close(tmp_fd);
 
     if((slog_file = fopen("slog.txt", "w")) == NULL) {
-		  perror("Could not open file: ");
+		  perror("Could not open server logging file: ");
 		  return FILE_OPEN_ERROR;
 	  }
 
     return SUCESS;
 }
 
-int initRoom(int num_seats) {
+void createTicketOffices(int num_ticket_offices) {
 
-  //Initializes global variables
-  num_room_seats = num_seats;
-  num_room_seats_remaining = num_room_seats;
-  seats = malloc((num_room_seats + 1)*sizeof(Seat));
-  room_access_cond = malloc((num_room_seats + 1)*sizeof(pthread_cond_t));
+  // Thread id’s
+  int count[num_ticket_offices];
+  pthread_t thread_ids[num_ticket_offices];
 
-  //Ensure that both all seats and room_access_cond components are corretly initialized
-  for(int i = 0; i <= num_room_seats; i++) {
-    seats[i].occupied = 0;
-    seats[i].clientId = 0;
-    seats[i].access_status = 0;
-    pthread_cond_init(&room_access_cond[i], NULL);
+  // Creates num_ticket_offices threads
+  for (int k=1; k <= num_ticket_offices; k++) {
+    count[k] = k;
+    pthread_create(&thread_ids[k], NULL, ticketOffice, &count[k]);
   }
+}
 
-  return SUCESS;
+void terminateAllThreads(int num_threads) {
+
+  //Change global variable
+  terminate = 1;
+
+  for(int i = 0; i < num_threads; i++)
+    sem_post(&full);
+
 }
 
 void * ticketOffice(void * arg) {
@@ -201,6 +247,9 @@ void * ticketOffice(void * arg) {
 
     //Retrieves request separated info and validates request
     Request request_info = validateRequest(office_request, num_room_seats);
+
+    //Opens client FIFO to send answer
+    client_fifo_fd = openClientFifo(request_info);
 
     //Request local variables
     int num_wanted_seats = request_info.num_wanted_seats;
@@ -238,7 +287,6 @@ void * ticketOffice(void * arg) {
       pref_seat_list_pointer++;
     }
 
-    printf("%d\n",request_info.validation_return_value );
     //Checks if reservation was successfully made
     if(num_wanted_seats > 0) {
         for(int i = 0; i < (request_info.num_wanted_seats - num_wanted_seats); i++)
@@ -249,6 +297,7 @@ void * ticketOffice(void * arg) {
     }
 
     //Stores request information on slog text file
+    sendAnswerToClient(request_info, reserved_seats);
     printServerLogging(tid, request_info, reserved_seats);
 
     //Free access to all pref_seat_list seats
@@ -264,6 +313,57 @@ void * ticketOffice(void * arg) {
     fprintf(slog_file, "%d-CLOSE\n", tid);
 
   return NULL;
+}
+
+int openClientFifo(Request request_info) {
+
+  //Local variables
+  int fifo_fd;
+  char pathname[50], pid[5];
+
+  //Initializes client fifo name
+  sprintf(pid, "%d", request_info.client_pid);
+  strcpy(pathname, "../client/ans");
+  strcat(pathname,pid);
+
+  //Opens requests fifo on read-only mode
+  if((fifo_fd = open(pathname, O_WRONLY | O_NONBLOCK)) == -1) {
+    perror("ERRO :: ");
+    printf("Could not open client fifo %s on write only mode\n", pathname);
+    return ERROR_OPEN_FIFO;
+  }
+
+  return fifo_fd;
+}
+
+void sendAnswerToClient(Request request_info, int * reserved_seats) {
+
+  //Local variables
+  char answer[PIPE_BUF], pid[WIDTH_PID], return_value[2], seat_number[WIDTH_SEAT];
+
+  //Initializes client fifo name
+  sprintf(pid, "%d", request_info.client_pid);
+  sprintf(pid, "%d", request_info.validation_return_value);
+
+  strcpy(answer, "");
+  strcat(answer,pid); strcat(answer," ");
+  strcat(answer,return_value); strcat(answer," ");
+
+  if(request_info.validation_return_value == 0) {
+
+      for(int i = 0; i < request_info.num_wanted_seats; i++) {
+        sprintf(seat_number, "%d", reserved_seats[i]);
+        strcat(answer,seat_number); strcat(answer," ");
+      }
+  }
+
+  //Appends new line character
+  strcat(answer,"\n");
+
+  //Writes answer to client fifo
+  write(client_fifo_fd, answer, sizeof(answer));
+
+  close(client_fifo_fd);
 }
 
 void printServerLogging(int tid, Request request_info, int * reserved_seats) {
@@ -344,7 +444,7 @@ int printServerBookings() {
   }
 
   //Initializes formatted leadingZeros expression
-  leadingZeros(leadingZeros_seat,WIDTH_SEAT,"d ");
+  leadingZeros(leadingZeros_seat,WIDTH_SEAT,"d\n");
 
   for(int i = 1; i <= num_room_seats; i++) {
     if(!isSeatFree(seats,i))

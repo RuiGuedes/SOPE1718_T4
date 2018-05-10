@@ -30,7 +30,7 @@
 #define FUL -6
 
 #define DELAY(X) usleep(X)
-#define DELAYED_TIME 500000  //500 miliseconds = 500.000 microseconds
+#define DELAYED_TIME 100000  //100 miliseconds = 100.000 microseconds
 
 //////////////////////
 // GLOBAL VARIABLES //

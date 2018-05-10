@@ -18,10 +18,19 @@
 #define ERROR_OPEN_FIFO -3
 #define ERROR_CLOSE_FIFO -4
 #define ERROR_UNLINK -5
+#define FILE_OPEN_ERROR -5
 
 #define WIDTH_PID 5
 #define WIDTH_XXNN 5
-#define WIDTH_SEAT = 4
+#define WIDTH_SEAT 4
+
+#define MAX -1
+#define NST -2
+#define IID -3
+#define ERR -4
+#define NAV -5
+#define FUL -6
+#define OUT -7
 
 
 //////////////////////
@@ -31,12 +40,28 @@
 int time_out, num_wanted_seats;
 char * pref_seat_list;
 
+FILE * clog_file;
+FILE * cbook_file;
+
+typedef struct Answers {
+    int client_pid;
+    int validation_return_value;
+    int * reserved_seats;
+} Answer;
+
+Answer request_answer;
+
 ///////////////
 // FUNCTIONS //
 ///////////////
 
 int  openRequestsFifo();
 int  initClientFifo(char * pathname);
+int  openCLOGTextFile();
 int  terminateClientProg(char * pathname, int requests_fd, int client_fd);
 int  createFormattedRequest(char * request, char * argv[]);
 void initGlobalVariables(char * argv[]);
+void initializeAnswerStruct(char * answer);
+int  printClientLogging();
+int  printClientBookings();
+void leadingZeros(char * leadingZeroString, int width_size, char * catString);

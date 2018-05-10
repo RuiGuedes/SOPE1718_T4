@@ -1,8 +1,6 @@
 #include "client.h"
 
 //TODO Arranjar maneira de todos os ficheiros serem criados num determinado Local
-//TODO O resultado dos pedidos de reserva efetuados deve ser registado, pelos clientes, num ficheiro partilhado por todos eles, clog.txt.
-//TODO Devem também ser guardados no ficheiro cbook.txt (clients bookings) os números inteiros identificadores dos lugares (apenas estes) que foram reservados para todos os clientes
 
 int main(int argc, char* argv[], char* envp[]) {
 
@@ -14,7 +12,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
   //Local variables declaration
   int requests_fd, client_fd;
-  char pathname[8], request[PIPE_BUF];
+  char pathname[8], request[PIPE_BUF], answer[PIPE_BUF];
 
   //Global variables initialization
   initGlobalVariables(argv);
@@ -33,7 +31,9 @@ int main(int argc, char* argv[], char* envp[]) {
   if((requests_fd = openRequestsFifo()) == ERROR_OPEN_FIFO)
     return ERROR_OPEN_FIFO;
 
-
+  printf("ANTES");
+  openCLOGTextFile();
+printf("DEPOIS");
   //Writes request to requests fifo
   write(requests_fd, request, sizeof(request));
 
@@ -42,10 +42,29 @@ int main(int argc, char* argv[], char* envp[]) {
 
   //Main thread is responsible to listen client requests
   while( ((double)(clock() - begin) / CLOCKS_PER_SEC) < time_out) {
-
+    if(read(client_fd, answer, sizeof(answer)) > 0) {
+        initializeAnswerStruct(answer);
+        printClientLogging();
+        printClientBookings();
+        return terminateClientProg(pathname,requests_fd,client_fd);
+    }
   }
 
+  //Time out response
+  initializeAnswerStruct("0 -7 0");
+  printClientLogging();
+
+  //Terminate client program
   return terminateClientProg(pathname,requests_fd,client_fd);
+}
+
+void initGlobalVariables(char * argv[]) {
+
+  //Initializes global variables
+  time_out = atoi(argv[1]);
+  num_wanted_seats = atoi(argv[2]);
+  pref_seat_list = argv[3];
+
 }
 
 int initClientFifo(char * pathname) {
@@ -73,7 +92,182 @@ int initClientFifo(char * pathname) {
   return fifo_fd;
 }
 
-int  terminateClientProg(char * pathname, int requests_fd, int client_fd) {
+int createFormattedRequest(char * request, char * argv[]) {
+
+  char pid[5];
+  sprintf(pid,"%d",getpid());
+
+  strcat(request,pid); strcat(request," ");
+  strcat(request,argv[2]); strcat(request," ");
+  strcat(request,pref_seat_list); strcat(request, "\0");
+
+  return SUCESS;
+}
+
+void initializeAnswerStruct(char * answer) {
+
+  //Local Variables
+  char * token;
+  int type = 0, reserved_seats_pointer = 0;
+  const char delimiter[2] = " ";
+
+  //Initializes seats array of request_answer struct
+  request_answer.reserved_seats = malloc(num_wanted_seats*sizeof(int));
+
+  //Get's the first token
+  token = strtok(answer, delimiter);
+
+  //Walk through other tokens
+  while(token != NULL) {
+
+    if(type == 0)
+      request_answer.client_pid = atoi(token);
+    else if(type == 1)
+      request_answer.validation_return_value = atoi(token);
+    else {
+      request_answer.reserved_seats[reserved_seats_pointer] = atoi(token);
+      reserved_seats_pointer++;
+    }
+
+    type++;
+    token = strtok(NULL, delimiter);
+  }
+
+}
+
+int openRequestsFifo() {
+
+  //Local variables
+  int fifo_fd;
+
+  //Opens requests fifo
+  if((fifo_fd = open("../server/requests", O_WRONLY | O_NONBLOCK)) == -1) {
+    printf("Could not open <requests> FIFO on write only mode\n");
+    return ERROR_OPEN_FIFO;
+  }
+
+  return fifo_fd;
+}
+
+int openCLOGTextFile() {
+
+  if((clog_file = fopen("clog.txt", "w")) == NULL) {
+    perror("Could not open file: ");
+    return FILE_OPEN_ERROR;
+  }
+
+  return SUCESS;
+}
+
+int printClientLogging() {
+
+  //Local variables
+  int tmp_fd;
+  char leadingZeros_pid[10];
+  char leadingZeros_xxnn[10];
+  char leadingZeros_seat[10];
+
+  if ((tmp_fd = open("clog.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
+    perror("Could not open server logging text file: \n");
+    return FILE_OPEN_ERROR;
+  }
+  else
+    close(tmp_fd);
+
+  if((clog_file = fopen("clog.txt", "w")) == NULL) {
+    perror("Could not open file: ");
+    return FILE_OPEN_ERROR;
+  }
+
+  //Initializes local variables
+  leadingZeros(leadingZeros_pid,WIDTH_PID,"d ");
+  leadingZeros(leadingZeros_xxnn,(WIDTH_XXNN - 1)/2,"d");
+  leadingZeros(leadingZeros_seat,WIDTH_SEAT,"d ");
+
+  //Prints result of request
+  if(request_answer.validation_return_value != 0) {
+
+    //Print client PID
+    if(request_answer.client_pid != 0)
+      fprintf(clog_file, leadingZeros_pid, request_answer.client_pid);
+
+    if(request_answer.validation_return_value == MAX)
+      fprintf(clog_file, "MAX\n");
+    else if(request_answer.validation_return_value == NST)
+      fprintf(clog_file, "NST\n");
+    else if(request_answer.validation_return_value == IID)
+      fprintf(clog_file, "IID\n");
+    else if(request_answer.validation_return_value == NAV)
+      fprintf(clog_file, "NAV\n");
+    else if(request_answer.validation_return_value == ERR)
+      fprintf(clog_file, "ERR\n");
+    else if(request_answer.validation_return_value == FUL)
+      fprintf(clog_file, "FUL\n");
+    else if(request_answer.validation_return_value == OUT)
+      fprintf(clog_file, "OUT\n");
+  }
+  else {
+
+    for(int i = 1; i <= num_wanted_seats; i++) {
+      fprintf(clog_file, leadingZeros_pid, request_answer.client_pid);
+      fprintf(clog_file, leadingZeros_xxnn, i);
+      fprintf(clog_file, ".");
+      fprintf(clog_file, leadingZeros_xxnn, num_wanted_seats);
+      fprintf(clog_file, " ");
+      fprintf(clog_file, leadingZeros_seat, request_answer.reserved_seats[i]);
+      fprintf(clog_file, "\n");
+    }
+  }
+
+  //Closes clog_file
+  fclose(clog_file);
+
+  return SUCESS;
+
+}
+
+int printClientBookings() {
+
+  //Local variables
+  char leadingZeros_seat[10];
+
+  if((cbook_file = fopen("cbook.txt", "w")) == NULL) {
+    perror("Could not open file: ");
+    return FILE_OPEN_ERROR;
+  }
+
+  //Initializes local variables
+  leadingZeros(leadingZeros_seat,WIDTH_SEAT,"d");
+
+  //Prints result of request
+  if(request_answer.validation_return_value == 0) {
+
+    for(int i = 1; i <= num_wanted_seats; i++) {
+      fprintf(cbook_file, leadingZeros_seat, request_answer.reserved_seats[i]);
+      fprintf(cbook_file, "\n");
+    }
+
+  }
+
+  //Closes cbook_file
+  fclose(cbook_file);
+
+  return SUCESS;
+}
+
+void leadingZeros(char * leadingZeroString, int width_size, char * catString) {
+
+  //Local variables
+  char width[10];
+
+  //Format string
+  sprintf(width, "%d", width_size);
+  strcpy(leadingZeroString, "%0");
+  strcat(leadingZeroString, width);
+  strcat(leadingZeroString, catString);
+}
+
+int terminateClientProg(char * pathname, int requests_fd, int client_fd) {
 
   //Closes requests fifo
   if(close(requests_fd) == -1) {
@@ -93,40 +287,8 @@ int  terminateClientProg(char * pathname, int requests_fd, int client_fd) {
     return ERROR_UNLINK;
   }
 
-  return SUCESS;
-}
-
-void initGlobalVariables(char * argv[]) {
-
-  //Initializes global variables
-  time_out = atoi(argv[1]);
-  num_wanted_seats = atoi(argv[2]);
-  pref_seat_list = argv[3];
-
-}
-
-int  openRequestsFifo() {
-
-  //Local variables
-  int fifo_fd;
-
-  //Opens requests fifo
-  if((fifo_fd = open("../server/requests", O_WRONLY | O_NONBLOCK)) == -1) {
-    printf("Could not open <requests> FIFO on write only mode\n");
-    return ERROR_OPEN_FIFO;
-  }
-
-  return fifo_fd;
-}
-
-int createFormattedRequest(char * request, char * argv[]) {
-
-  char pid[5];
-  sprintf(pid,"%d",getpid());
-
-  strcat(request,pid); strcat(request," ");
-  strcat(request,argv[2]); strcat(request," ");
-  strcat(request,pref_seat_list); strcat(request, "\0");
+  fclose(clog_file);
+  free(request_answer.reserved_seats);
 
   return SUCESS;
 }
