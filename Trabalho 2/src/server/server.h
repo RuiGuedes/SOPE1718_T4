@@ -40,5 +40,6 @@ int functionCallValidation(char * argv[]);
 void createTicketOffices(int num_ticket_offices);
 void terminateAllThreads(int num_threads);
 void * ticketOffice(void * arg);
-void printRequestInfo(int tid, Request request_info,int * reserved_seats);
-int printServerBookings();
+void printServerLogging(int tid, Request request_info,int * reserved_seats);
+int  printServerBookings();
+void leadingZeros(char * leadingZeroString, int width_size, char * catString);

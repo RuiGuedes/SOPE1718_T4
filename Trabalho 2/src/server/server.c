@@ -207,8 +207,11 @@ void * ticketOffice(void * arg) {
     int reserved_seats[num_wanted_seats];
     int pref_seat_list_pointer = 0, reserved_seats_pointer = 0;
 
-    //TODO add condition of remaining seats != num_room_seats
-    while(num_wanted_seats > 0 && pref_seat_list_pointer < request_info.num_pref_seats) {
+    //Check if room is full or not
+    if(num_room_seats_remaining == 0)
+      request_info.validation_return_value = FUL;
+
+    while(num_wanted_seats > 0 && pref_seat_list_pointer < request_info.num_pref_seats && request_info.validation_return_value == 0) {
 
       //Loop local variables
       int seat_number = request_info.pref_seat_list[pref_seat_list_pointer];
@@ -235,27 +238,24 @@ void * ticketOffice(void * arg) {
       pref_seat_list_pointer++;
     }
 
+    printf("%d\n",request_info.validation_return_value );
     //Checks if reservation was successfully made
     if(num_wanted_seats > 0) {
         for(int i = 0; i < (request_info.num_wanted_seats - num_wanted_seats); i++)
             freeSeat(seats,reserved_seats[i]);
 
-        request_info.validation_return_value = NAV;
+        if(request_info.validation_return_value == 0)
+          request_info.validation_return_value = NAV;
     }
-    else
-      printRequestInfo(tid, request_info, reserved_seats);
+
+    //Stores request information on slog text file
+    printServerLogging(tid, request_info, reserved_seats);
 
     //Free access to all pref_seat_list seats
     for(int i = 0; i < request_info.num_pref_seats; i++) {
       seats[request_info.pref_seat_list[i]].access_status = 0;
       pthread_cond_signal(&room_access_cond[request_info.pref_seat_list[i]]);
     }
-
-    //TODO add remaining seats number to room.h and check if room is full
-
-    //TODO print information on slog e sbook text files
-
-
   }
 
   if(tid < 10)
@@ -266,74 +266,69 @@ void * ticketOffice(void * arg) {
   return NULL;
 }
 
-void printRequestInfo(int tid, Request request_info, int * reserved_seats) {
+void printServerLogging(int tid, Request request_info, int * reserved_seats) {
 
+  //Local variables
+  char leadingZeros_tid[10];
   char leadingZeros_pid[10];
-  char leadingZeros_seat[10];
   char leadingZeros_numSeats[10];
-  char width_seat[10];
-  char width_pid[10];
-  char width_numSeats[10];
+  char leadingZeros_seat[10];
 
-  sprintf(width_seat, "%d", WIDTH_SEAT);
-  sprintf(width_pid, "%d", WIDTH_PID);
-  sprintf(width_numSeats, "%d", WIDTH_XXNN);
 
-  strcpy(leadingZeros_pid, "%0");
-  strcat(leadingZeros_pid, width_pid);
-  strcat(leadingZeros_pid, "d-");
+  //Initializes local variables
+  leadingZeros(leadingZeros_tid, WIDTH,"d-");
+  leadingZeros(leadingZeros_pid,WIDTH_PID,"d-");
+  leadingZeros(leadingZeros_numSeats,WIDTH,"d: ");
+  leadingZeros(leadingZeros_seat,WIDTH_SEAT,"d ");
 
-  strcpy(leadingZeros_numSeats, "%0");
-  strcat(leadingZeros_numSeats, width_numSeats);
-  strcat(leadingZeros_numSeats, "d: ");
-
-  strcpy(leadingZeros_seat, "%0");
-  strcat(leadingZeros_seat, width_seat);
-  strcat(leadingZeros_seat, "d ");
-
-  if(tid < 10)
-    fprintf(slog_file, "0%d-", tid);
-  else
-    fprintf(slog_file, "0%d-", tid);
-
+  //Prints initial information
+  fprintf(slog_file, leadingZeros_tid, tid);
   fprintf(slog_file, leadingZeros_pid, request_info.client_pid);
   fprintf(slog_file, leadingZeros_numSeats, request_info.num_wanted_seats);
 
+  //Prints pref_seat_list
   for(int i = 0; i < MAX_CLI_SEATS; i++) {
     if(i < request_info.num_pref_seats)
       fprintf(slog_file, leadingZeros_seat, request_info.pref_seat_list[i]);
     else {
-      for(int j = 0; j < WIDTH_SEAT; j++)
-        fprintf(slog_file, " ");
+      for(int j = 0; j < WIDTH_SEAT; j++) {
+        if((j+1) == WIDTH_SEAT)
+          fprintf(slog_file, "  ");
+        else
+          fprintf(slog_file, " ");
+      }
     }
   }
 
+  //Prints result of request
+  fprintf(slog_file, "- ");
+
   if(request_info.validation_return_value == MAX)
-    fprintf(slog_file, " - MAX\n");
+    fprintf(slog_file, "MAX");
   else if(request_info.validation_return_value == NST)
-    fprintf(slog_file, " - NST\n");
+    fprintf(slog_file, "NST");
   else if(request_info.validation_return_value == IID)
-    fprintf(slog_file, " - IID\n");
+    fprintf(slog_file, "IID");
   else if(request_info.validation_return_value == NAV)
-    fprintf(slog_file, " - NAV\n");
+    fprintf(slog_file, "NAV");
   else if(request_info.validation_return_value == ERR)
-    fprintf(slog_file, " - ERR\n");
+    fprintf(slog_file, "ERR");
   else if(request_info.validation_return_value == FUL)
-    fprintf(slog_file, " - FUL\n");
+    fprintf(slog_file, "FUL");
   else {
-    fprintf(slog_file, " - ");
     for(int i = 0; i < request_info.num_wanted_seats; i++)
       fprintf(slog_file, leadingZeros_seat, reserved_seats[i]);
   }
 
+  //Prints newline character
   fprintf(slog_file, "\n");
-
 }
 
 int printServerBookings() {
 
   //Local variables
   int tmp_fd;
+  char leadingZeros_seat[10];
   FILE * sbook_file;
 
   if ((tmp_fd = open("sbook.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
@@ -348,14 +343,8 @@ int printServerBookings() {
     return FILE_OPEN_ERROR;
   }
 
-  char leadingZeros_seat[10];
-  char width_seat[10];
-
-  sprintf(width_seat, "%d", WIDTH_SEAT);
-
-  strcpy(leadingZeros_seat, "%0");
-  strcat(leadingZeros_seat, width_seat);
-  strcat(leadingZeros_seat, "d\n");
+  //Initializes formatted leadingZeros expression
+  leadingZeros(leadingZeros_seat,WIDTH_SEAT,"d ");
 
   for(int i = 1; i <= num_room_seats; i++) {
     if(!isSeatFree(seats,i))
@@ -364,4 +353,16 @@ int printServerBookings() {
 
   return SUCESS;
 
+}
+
+void leadingZeros(char * leadingZeroString, int width_size, char * catString) {
+
+  //Local variables
+  char width[10];
+
+  //Format string
+  sprintf(width, "%d", width_size);
+  strcpy(leadingZeroString, "%0");
+  strcat(leadingZeroString, width);
+  strcat(leadingZeroString, catString);
 }

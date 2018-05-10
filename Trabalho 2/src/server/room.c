@@ -5,6 +5,7 @@ Request validateRequest(char * request, int num_room_seats) {
   //Local Variables
   Request request_info;
   initRequestStruct(request, &request_info);
+  request_info.validation_return_value = 0;
 
   //Initializes global variables
   pthread_mutex_init (&access_lock, NULL);

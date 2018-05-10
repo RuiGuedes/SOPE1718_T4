@@ -18,6 +18,7 @@
 #define WIDTH_PID 5
 #define WIDTH_XXNN 5
 #define WIDTH_SEAT 4
+#define WIDTH 2
 #define FREE 1
 #define SUCESS 0
 #define OCCUPIED 0
