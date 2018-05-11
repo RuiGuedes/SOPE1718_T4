@@ -1,6 +1,6 @@
 #include "client.h"
 
-//TODO Arranjar maneira de todos os ficheiros serem criados num determinado Local
+//TODO Mudar tempo de espera de resposta para ms
 
 int main(int argc, char* argv[], char* envp[]) {
 
@@ -12,7 +12,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
   //Local variables declaration
   int requests_fd, client_fd;
-  char pathname[8], request[PIPE_BUF], answer[PIPE_BUF];
+  char pathname[50], request[PIPE_BUF], answer[PIPE_BUF];
 
   //Global variables initialization
   initGlobalVariables(argv);
@@ -73,7 +73,7 @@ int initClientFifo(char * pathname) {
   char pid[5];
   sprintf(pid, "%d", getpid());
 
-  strcpy(pathname, "ans");
+  strcpy(pathname, "../../resources/ans");
   strcat(pathname,pid);
 
   //Creates client fifo
@@ -140,7 +140,7 @@ int openRequestsFifo() {
   int fifo_fd;
 
   //Opens requests fifo
-  if((fifo_fd = open("../server/requests", O_WRONLY | O_NONBLOCK)) == -1) {
+  if((fifo_fd = open("../../resources/requests", O_WRONLY | O_NONBLOCK)) == -1) {
     printf("Could not open <requests> FIFO on write only mode\n");
     return ERROR_OPEN_FIFO;
   }
@@ -155,7 +155,7 @@ int printClientLogging() {
   char leadingZeros_xxnn[10];
   char leadingZeros_seat[10];
 
-  if((clog_file = fopen("clog.txt", "a")) == NULL) {
+  if((clog_file = fopen("../../resources/clog.txt", "a")) == NULL) {
     perror("Could not open file: ");
     return FILE_OPEN_ERROR;
   }
@@ -165,8 +165,6 @@ int printClientLogging() {
   leadingZeros(leadingZeros_xxnn,(WIDTH_XXNN - 1)/2,"d");
   leadingZeros(leadingZeros_seat,WIDTH_SEAT,"d ");
 
-  printf("PID :: %d\n", request_answer.client_pid);
-  printf("RETURN :: %d\n", request_answer.validation_return_value);
 
   //Prints result of request
   if(request_answer.validation_return_value != 0) {
@@ -215,7 +213,7 @@ int printClientBookings() {
   //Local variables
   char leadingZeros_seat[10];
 
-  if((cbook_file = fopen("cbook.txt", "a")) == NULL) {
+  if((cbook_file = fopen("../../resources/cbook.txt", "a")) == NULL) {
     perror("Could not open file: ");
     return FILE_OPEN_ERROR;
   }
@@ -230,7 +228,6 @@ int printClientBookings() {
       fprintf(cbook_file, leadingZeros_seat, request_answer.reserved_seats[i-1]);
       fprintf(cbook_file, "\n");
     }
-
   }
 
   //Closes cbook_file
@@ -271,7 +268,6 @@ int terminateClientProg(char * pathname, int requests_fd, int client_fd) {
     return ERROR_UNLINK;
   }
 
-  printf("############\n");
   //fclose(clog_file);
   //free(request_answer.reserved_seats);
 

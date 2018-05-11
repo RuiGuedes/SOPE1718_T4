@@ -11,6 +11,7 @@
 #define ERROR_OPEN_FIFO -3
 #define ERROR_INIT_SEM -4
 #define FILE_OPEN_ERROR -5
+#define MISSING_RESOURCES -6
 
 //////////////////////
 // GLOBAL VARIABLES //

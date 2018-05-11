@@ -1,11 +1,21 @@
 #include "server.h"
 
+//TODO Write SERVER CLOSED on slog_file
+
 int main(int argc, char* argv[], char* envp[]) {
 
   //Check function validation call
   if(argc != 4) {
     printf("Usage: server <num_room_seats> <num_ticket_offices> <open_time>\n");
     return INVALID_FUNCTION_CALL;
+  }
+
+  DIR* dir = opendir("../../resources");
+  if (dir)
+    closedir(dir);
+  else {
+    printf("Error: Folder <resources> must be created at same level as <src> folder\n");
+    return MISSING_RESOURCES;
   }
 
   //Checks server function call validation
@@ -41,6 +51,7 @@ int main(int argc, char* argv[], char* envp[]) {
   //Time in which ticket offices open
   clock_t begin = clock();
 
+  printf("Server opened !\n");
 
   //Main thread is responsible to listen client requests
   while( ((double)(clock() - begin) / CLOCKS_PER_SEC) < atoi(argv[3])) {
@@ -50,15 +61,17 @@ int main(int argc, char* argv[], char* envp[]) {
 
     if(sem_value == 1) {
       if(read(requests_fd, request, sizeof(request)) > 0) {
+        printf("Received request :: %s\n", request);
         sem_wait(&empty);
         sem_post(&full);
       }
     }
   }
 
+  printf("Server closed ! Handling remaining requests\n");
+
   //Terminates all threads after they execute their own requests
   terminateAllThreads(atoi(argv[2]));
-
 
   //Wait's for all threads
   for(int i = 1; i <= atoi(argv[2]); i++)
@@ -73,7 +86,7 @@ int main(int argc, char* argv[], char* envp[]) {
     printf("Error while closing requests FIFO\n");
 
   //Destroys requests fifo
-  unlink("requests");
+  unlink("../../resources/requests");
 
   //Destroys semaphores
   sem_close(&empty);
@@ -100,7 +113,7 @@ int functionCallValidation(char * argv[]) {
   int open_time = atoi(argv[3]);
 
   if((num_ticket_offices <= 0) || (num_seats <= 0) || (num_seats > MAX_ROOM_SEATS) || (open_time <= 0))
-  return INVALID_FUNCTION_CALL;
+    return INVALID_FUNCTION_CALL;
 
   return initRoom(num_seats);
 }
@@ -146,13 +159,13 @@ int initRequestsFifo() {
   int fifo_fd;
 
   //Creates fifo used to receive client requests
-  if(mkfifo("requests", S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) == -1) {
+  if(mkfifo("../../resources/requests", S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) == -1) {
     printf("Could not create <requests> FIFO\n");
     return ERROR_CREATE_FIFO;
   }
 
   //Opens requests fifo on read-only mode
-  if((fifo_fd = open("requests", O_RDONLY | O_NONBLOCK)) == -1) {
+  if((fifo_fd = open("../../resources/requests", O_RDONLY | O_NONBLOCK)) == -1) {
     printf("Could not open <requests> FIFO on read only mode\n");
     return ERROR_OPEN_FIFO;
   }
@@ -165,14 +178,14 @@ int initClientFiles() {
   //Local variables
   int tmp_fd;
 
-  if ((tmp_fd = open("../client/clog.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
+  if ((tmp_fd = open("../../resources/clog.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
     perror("Could not open server logging text file: \n");
     return FILE_OPEN_ERROR;
   }
   else
     close(tmp_fd);
 
-  if ((tmp_fd = open("../client/cbook.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
+  if ((tmp_fd = open("../../resources/cbook.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
     perror("Could not open server logging text file: \n");
     return FILE_OPEN_ERROR;
   }
@@ -186,14 +199,14 @@ int openSLOGTextFile() {
 
     int tmp_fd;
 
-		if ((tmp_fd = open("slog.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
+		if ((tmp_fd = open("../../resources/slog.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
 			perror("Could not open server logging text file: \n");
 			return FILE_OPEN_ERROR;
 		}
     else
       close(tmp_fd);
 
-    if((slog_file = fopen("slog.txt", "w")) == NULL) {
+    if((slog_file = fopen("../../resources/slog.txt", "w")) == NULL) {
 		  perror("Could not open server logging file: ");
 		  return FILE_OPEN_ERROR;
 	  }
@@ -226,8 +239,8 @@ void terminateAllThreads(int num_threads) {
 }
 
 void * ticketOffice(void * arg) {
-  int tid = *(int *)arg;
 
+  int tid = *(int *)arg;
   fprintf(slog_file, "%02d-OPEN\n", tid);
 
   while(1) {
@@ -312,17 +325,17 @@ int openClientFifo(Request request_info) {
 
   //Local variables
   int fifo_fd;
-  char pathname[50], pid[5];
+  char pathname[100], pid[10];
 
   //Initializes client fifo name
   sprintf(pid, "%d", request_info.client_pid);
-  strcpy(pathname, "../client/ans");
+  strcpy(pathname, "../../resources/ans");
   strcat(pathname,pid);
 
   //Opens requests fifo on read-only mode
   if((fifo_fd = open(pathname, O_WRONLY | O_NONBLOCK)) == -1) {
-    perror("ERRO :: ");
     printf("Could not open client fifo %s on write only mode\n", pathname);
+    printf("%d\n", request_info.client_pid);
     return ERROR_OPEN_FIFO;
   }
 
@@ -425,14 +438,14 @@ int printServerBookings() {
   char leadingZeros_seat[10];
   FILE * sbook_file;
 
-  if ((tmp_fd = open("sbook.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
+  if ((tmp_fd = open("../../resources/sbook.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
     perror("Could not open server logging text file: \n");
     return FILE_OPEN_ERROR;
   }
   else
     close(tmp_fd);
 
-  if((sbook_file = fopen("sbook.txt", "w")) == NULL) {
+  if((sbook_file = fopen("../../resources/sbook.txt", "w")) == NULL) {
     perror("Could not open file: ");
     return FILE_OPEN_ERROR;
   }
