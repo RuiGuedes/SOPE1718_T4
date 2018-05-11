@@ -41,7 +41,6 @@ int main(int argc, char* argv[], char* envp[]) {
   //Time in which ticket offices open
   clock_t begin = clock();
 
-  printf("WAITING FOR REQUESTS\n");
 
   //Main thread is responsible to listen client requests
   while( ((double)(clock() - begin) / CLOCKS_PER_SEC) < atoi(argv[3])) {
@@ -56,8 +55,6 @@ int main(int argc, char* argv[], char* envp[]) {
       }
     }
   }
-
-  printf("NO MORE REQUESTS\n");
 
   //Terminates all threads after they execute their own requests
   terminateAllThreads(atoi(argv[2]));
@@ -93,7 +90,6 @@ int main(int argc, char* argv[], char* envp[]) {
   free(seats);
   free(room_access_cond);
 
-  printf("MAIN THREAD ENDED\n");
 }
 
 int functionCallValidation(char * argv[]) {
@@ -212,10 +208,11 @@ void createTicketOffices(pthread_t * thread_ids, int num_ticket_offices) {
 
   // Creates num_ticket_offices threads
   for (int k=1; k <= num_ticket_offices; k++) {
-    count[k] = k;
-    pthread_create(&thread_ids[k], NULL, ticketOffice, &count[k]);
+    count[k-1] = k;
+    pthread_create(&thread_ids[count[k-1]], NULL, ticketOffice, &count[k-1]);
   }
 
+  DELAY(DELAYED_TIME);
 }
 
 void terminateAllThreads(int num_threads) {
@@ -231,10 +228,7 @@ void terminateAllThreads(int num_threads) {
 void * ticketOffice(void * arg) {
   int tid = *(int *)arg;
 
-  if(tid < 10)
-    fprintf(slog_file, "0%d-OPEN\n", tid);
-  else
-    fprintf(slog_file, "%d-OPEN\n", tid);
+  fprintf(slog_file, "%02d-OPEN\n", tid);
 
   while(1) {
     sem_wait(&full);
@@ -309,10 +303,7 @@ void * ticketOffice(void * arg) {
     }
   }
 
-  if(tid < 10)
-    fprintf(slog_file, "0%d-CLOSE\n", tid);
-  else
-    fprintf(slog_file, "%d-CLOSE\n", tid);
+  fprintf(slog_file, "%02d-CLOSE\n", tid);
 
   return NULL;
 }
@@ -363,7 +354,6 @@ void sendAnswerToClient(Request request_info, int * reserved_seats) {
   //Appends new line character
   strcat(answer,"\n");
 
-  printf("ANSWER GIVEN :: $%s$\n", answer);
   //Writes answer to client fifo
   write(client_fifo_fd, answer, sizeof(answer));
 

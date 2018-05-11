@@ -32,8 +32,6 @@ int main(int argc, char* argv[], char* envp[]) {
     return ERROR_OPEN_FIFO;
 
 
-  //openCLOGTextFile();
-
   //Writes request to requests fifo
   write(requests_fd, request, sizeof(request));
 
@@ -43,7 +41,6 @@ int main(int argc, char* argv[], char* envp[]) {
   //Main thread is responsible to listen client requests
   while( ((double)(clock() - begin) / CLOCKS_PER_SEC) < time_out) {
     if(read(client_fd, answer, sizeof(answer)) > 0) {
-        printf("RECEIVED ANSWER :: $%s$\n", answer);
         initializeAnswerStruct(answer);
         printClientLogging();
         printClientBookings();
@@ -51,9 +48,9 @@ int main(int argc, char* argv[], char* envp[]) {
     }
 
   }
-  printf("TIMEOUT\n");
+
   //Time out response
-  initializeAnswerStruct("0 -7 0");
+  initializeAnswerStruct("0 -7 0\n");
   printClientLogging();
 
   //Terminate client program
@@ -111,7 +108,7 @@ void initializeAnswerStruct(char * answer) {
   //Local Variables
   char * token;
   int type = 0, reserved_seats_pointer = 0;
-  const char delimiter[2] = " \n";
+  const char delimiter[3] = " \n";
 
   //Initializes seats array of request_answer struct
   request_answer.reserved_seats = malloc(num_wanted_seats*sizeof(int));
@@ -274,6 +271,7 @@ int terminateClientProg(char * pathname, int requests_fd, int client_fd) {
     return ERROR_UNLINK;
   }
 
+  printf("############\n");
   //fclose(clog_file);
   //free(request_answer.reserved_seats);
 
