@@ -49,8 +49,9 @@ int main(int argc, char* argv[], char* envp[]) {
         printClientBookings();
         return terminateClientProg(pathname,requests_fd,client_fd);
     }
-  }
 
+  }
+  printf("TIMEOUT\n");
   //Time out response
   initializeAnswerStruct("0 -7 0");
   printClientLogging();
@@ -86,7 +87,7 @@ int initClientFifo(char * pathname) {
 
   //Opens client fifo on write-only mode
   if((fifo_fd = open(pathname, O_RDONLY | O_NONBLOCK)) == -1) {
-    printf("Could not open <requests> FIFO on read only mode\n");
+    printf("Could not open <%s> FIFO on read only mode\n", pathname);
     return ERROR_OPEN_FIFO;
   }
 
@@ -110,7 +111,7 @@ void initializeAnswerStruct(char * answer) {
   //Local Variables
   char * token;
   int type = 0, reserved_seats_pointer = 0;
-  const char delimiter[2] = " ";
+  const char delimiter[2] = " \n";
 
   //Initializes seats array of request_answer struct
   request_answer.reserved_seats = malloc(num_wanted_seats*sizeof(int));
@@ -200,7 +201,7 @@ int printClientLogging() {
       fprintf(clog_file, ".");
       fprintf(clog_file, leadingZeros_xxnn, num_wanted_seats);
       fprintf(clog_file, " ");
-      fprintf(clog_file, leadingZeros_seat, request_answer.reserved_seats[i]);
+      fprintf(clog_file, leadingZeros_seat, request_answer.reserved_seats[i-1]);
       fprintf(clog_file, "\n");
     }
   }
@@ -229,7 +230,7 @@ int printClientBookings() {
   if(request_answer.validation_return_value == 0) {
 
     for(int i = 1; i <= num_wanted_seats; i++) {
-      fprintf(cbook_file, leadingZeros_seat, request_answer.reserved_seats[i]);
+      fprintf(cbook_file, leadingZeros_seat, request_answer.reserved_seats[i-1]);
       fprintf(cbook_file, "\n");
     }
 

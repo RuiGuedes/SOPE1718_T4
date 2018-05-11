@@ -341,7 +341,7 @@ int openClientFifo(Request request_info) {
 void sendAnswerToClient(Request request_info, int * reserved_seats) {
 
   //Local variables
-  char answer[PIPE_BUF], pid[WIDTH_PID], return_value[2], seat_number[WIDTH_SEAT];
+  char answer[PIPE_BUF], pid[WIDTH_PID], return_value[WIDTH_PID];
 
   //Initializes client fifo name
   sprintf(pid, "%d", request_info.client_pid);
@@ -352,8 +352,8 @@ void sendAnswerToClient(Request request_info, int * reserved_seats) {
   strcat(answer,return_value); strcat(answer," ");
 
   if(request_info.validation_return_value == 0) {
-
       for(int i = 0; i < request_info.num_wanted_seats; i++) {
+        char seat_number[WIDTH_SEAT];
         sprintf(seat_number, "%d", reserved_seats[i]);
         strcat(answer,seat_number);
         strcat(answer," ");
@@ -361,13 +361,11 @@ void sendAnswerToClient(Request request_info, int * reserved_seats) {
   }
 
   //Appends new line character
-  strcat(answer,"\0");
+  strcat(answer,"\n");
 
   printf("ANSWER GIVEN :: $%s$\n", answer);
   //Writes answer to client fifo
   write(client_fifo_fd, answer, sizeof(answer));
-
-  DELAY(DELAYED_TIME);
 
   close(client_fifo_fd);
 }
