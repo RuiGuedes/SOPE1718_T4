@@ -1,7 +1,5 @@
 #include "client.h"
 
-//TODO Mudar tempo de espera de resposta para ms
-
 int main(int argc, char* argv[], char* envp[]) {
 
   //Check function validation call
@@ -38,15 +36,15 @@ int main(int argc, char* argv[], char* envp[]) {
   //Time which client will start waiting for an anwser
   clock_t begin = clock();
 
-  //Main thread is responsible to listen client requests
-  while( ((double)(clock() - begin) / CLOCKS_PER_SEC) < time_out) {
+  //Waits for an answer
+  while( ((double)(clock() - begin) / (CLOCKS_PER_SEC * 1000)) < time_out) {
+
     if(read(client_fd, answer, sizeof(answer)) > 0) {
         initializeAnswerStruct(answer);
         printClientLogging();
         printClientBookings();
         return terminateClientProg(pathname,requests_fd,client_fd);
     }
-
   }
 
   //Time out response
