@@ -264,9 +264,6 @@ void * ticketOffice(void * arg) {
     //Retrieves request separated info and validates request
     Request request_info = validateRequest(office_request, num_room_seats);
 
-    //Opens client FIFO to send answer
-    client_fifo_fd = openClientFifo(request_info);
-
     //Request local variables
     int num_wanted_seats = request_info.num_wanted_seats;
     int reserved_seats[num_wanted_seats];
@@ -312,6 +309,9 @@ void * ticketOffice(void * arg) {
           request_info.validation_return_value = NAV;
     }
 
+    //Opens client FIFO to send answer
+    client_fifo_fd = openClientFifo(request_info);
+
     //Stores request information on slog text file
     sendAnswerToClient(request_info, reserved_seats);
     printServerLogging(tid, request_info, reserved_seats);
@@ -341,8 +341,8 @@ int openClientFifo(Request request_info) {
 
   //Opens requests fifo on read-only mode
   if((fifo_fd = open(pathname, O_WRONLY)) == -1) {
-    printf("Could not open client fifo %s on write only mode\n", pathname);
-    printf("%d\n", request_info.client_pid);
+    perror("Could not open client fifo on write only mode: ");
+    //printf("Could not open client fifo %s on write only mode\n", pathname);
     return ERROR_OPEN_FIFO;
   }
 

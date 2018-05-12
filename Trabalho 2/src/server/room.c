@@ -12,12 +12,16 @@ Request validateRequest(char * request, int num_room_seats) {
   pthread_mutex_init (&seats_lock, NULL);
 
   //Validate num_wanted_seats
-  if((request_info.num_wanted_seats < 1) || (request_info.num_wanted_seats > MAX_CLI_SEATS))
+  if((request_info.num_wanted_seats < 1) || (request_info.num_wanted_seats > MAX_CLI_SEATS)) {
     request_info.validation_return_value = MAX;
+    return request_info;
+  }
 
   //Validate num_pref_seats
-  if((request_info.num_pref_seats < request_info.num_wanted_seats) || (request_info.num_pref_seats > MAX_CLI_SEATS))
+  if((request_info.num_pref_seats < request_info.num_wanted_seats) || (request_info.num_pref_seats > MAX_CLI_SEATS)) {
     request_info.validation_return_value = NST;
+    return request_info;
+  }
 
   //Validate pref_seat_list values
   for(int i = 0; i < request_info.num_pref_seats; i++) {

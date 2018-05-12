@@ -19,19 +19,18 @@ int main(int argc, char* argv[], char* envp[]) {
   if((requests_fd = openRequestsFifo()) == ERROR_OPEN_FIFO)
     return ERROR_OPEN_FIFO;
 
-  //Prepares request to be sent to the server
-  createFormattedRequest(request, argv);
-
-  //Writes request to requests fifo
-  if(write(requests_fd, request, sizeof(request)) < 0)
-    return ERROR;
-
   //Creates dedicated FIFO
   if((client_fd = initClientFifo(pathname)) == ERROR_CREATE_FIFO)
     return ERROR_CREATE_FIFO;
   else if(client_fd == ERROR_OPEN_FIFO)
     return ERROR_OPEN_FIFO;
 
+  //Prepares request to be sent to the server
+  createFormattedRequest(request, argv);
+
+  //Writes request to requests fifo
+  if(write(requests_fd, request, sizeof(request)) < 0)
+    return ERROR;
 
   //Time which client will start waiting for an anwser
   clock_t begin = clock();
