@@ -8,7 +8,6 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <semaphore.h>
-#include <dirent.h>
 
 ////////////
 // DEFINE //

@@ -8,14 +8,6 @@ int main(int argc, char* argv[], char* envp[]) {
     return INVALID_FUNCTION_CALL;
   }
 
-  DIR* dir = opendir("../../resources");
-  if (dir)
-    closedir(dir);
-  else {
-    printf("Error: Folder <resources> must be created at same level as <src> folder\n");
-    return MISSING_RESOURCES;
-  }
-
   //Checks server function call validation
   if(functionCallValidation(argv) == INVALID_FUNCTION_CALL) {
     printf("Server function call :: Invalid parameters\n");
@@ -71,7 +63,7 @@ int main(int argc, char* argv[], char* envp[]) {
     printf("Error while closing requests FIFO\n");
 
   //Destroys requests fifo
-  unlink("../../resources/requests");
+  unlink("requests");
 
   printf("\nServer closed ! Handling remaining requests\n\n");
 
@@ -146,13 +138,13 @@ int initRequestsFifo() {
   int fifo_fd;
 
   //Creates fifo used to receive client requests
-  if(mkfifo("../../resources/requests", S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) == -1) {
+  if(mkfifo("requests", S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) == -1) {
     printf("Could not create <requests> FIFO\n");
     return ERROR_CREATE_FIFO;
   }
 
   //Opens requests fifo on read-only mode
-  if((fifo_fd = open("../../resources/requests", O_RDONLY | O_NONBLOCK)) == -1) {
+  if((fifo_fd = open("requests", O_RDONLY | O_NONBLOCK)) == -1) {
     printf("Could not open <requests> FIFO on read only mode\n");
     return ERROR_OPEN_FIFO;
   }
@@ -165,14 +157,14 @@ int initClientFiles() {
   //Local variables
   int tmp_fd;
 
-  if ((tmp_fd = open("../../resources/clog.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
+  if ((tmp_fd = open("clog.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
     perror("Could not open server logging text file: \n");
     return FILE_OPEN_ERROR;
   }
   else
     close(tmp_fd);
 
-  if ((tmp_fd = open("../../resources/cbook.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
+  if ((tmp_fd = open("cbook.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
     perror("Could not open server logging text file: \n");
     return FILE_OPEN_ERROR;
   }
@@ -186,14 +178,14 @@ int openSLOGTextFile() {
 
     int tmp_fd;
 
-		if ((tmp_fd = open("../../resources/slog.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
+		if ((tmp_fd = open("slog.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
 			perror("Could not open server logging text file: \n");
 			return FILE_OPEN_ERROR;
 		}
     else
       close(tmp_fd);
 
-    if((slog_file = fopen("../../resources/slog.txt", "w")) == NULL) {
+    if((slog_file = fopen("slog.txt", "w")) == NULL) {
 		  perror("Could not open server logging file: ");
 		  return FILE_OPEN_ERROR;
 	  }
@@ -309,6 +301,10 @@ void * ticketOffice(void * arg) {
           request_info.validation_return_value = NAV;
     }
 
+    //Decrements number of seats available
+    if(request_info.validation_return_value == 0)
+      num_room_seats_remaining -= request_info.num_wanted_seats;
+
     //Opens client FIFO to send answer
     client_fifo_fd = openClientFifo(request_info);
 
@@ -336,13 +332,12 @@ int openClientFifo(Request request_info) {
 
   //Initializes client fifo name
   sprintf(pid, "%d", request_info.client_pid);
-  strcpy(pathname, "../../resources/ans");
+  strcpy(pathname, "ans");
   strcat(pathname,pid);
 
   //Opens requests fifo on read-only mode
   if((fifo_fd = open(pathname, O_WRONLY)) == -1) {
     perror("Could not open client fifo on write only mode: ");
-    //printf("Could not open client fifo %s on write only mode\n", pathname);
     return ERROR_OPEN_FIFO;
   }
 
@@ -445,14 +440,14 @@ int printServerBookings() {
   char leadingZeros_seat[10];
   FILE * sbook_file;
 
-  if ((tmp_fd = open("../../resources/sbook.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
+  if ((tmp_fd = open("sbook.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1){
     perror("Could not open server logging text file: \n");
     return FILE_OPEN_ERROR;
   }
   else
     close(tmp_fd);
 
-  if((sbook_file = fopen("../../resources/sbook.txt", "w")) == NULL) {
+  if((sbook_file = fopen("sbook.txt", "w")) == NULL) {
     perror("Could not open file: ");
     return FILE_OPEN_ERROR;
   }

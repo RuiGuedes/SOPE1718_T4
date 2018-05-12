@@ -71,7 +71,7 @@ int initClientFifo(char * pathname) {
   char pid[5];
   sprintf(pid, "%d", getpid());
 
-  strcpy(pathname, "../../resources/ans");
+  strcpy(pathname, "ans");
   strcat(pathname,pid);
 
   //Creates client fifo
@@ -138,7 +138,7 @@ int openRequestsFifo() {
   int fifo_fd;
 
   //Opens requests fifo
-  if((fifo_fd = open("../../resources/requests", O_WRONLY)) == -1) {
+  if((fifo_fd = open("requests", O_WRONLY)) == -1) {
     printf("Could not open <requests> FIFO on write only mode\n");
     return ERROR_OPEN_FIFO;
   }
@@ -153,7 +153,7 @@ int printClientLogging() {
   char leadingZeros_xxnn[10];
   char leadingZeros_seat[10];
 
-  if((clog_file = fopen("../../resources/clog.txt", "a")) == NULL) {
+  if((clog_file = fopen("clog.txt", "a")) == NULL) {
     perror("Could not open file: ");
     return FILE_OPEN_ERROR;
   }
@@ -211,7 +211,7 @@ int printClientBookings() {
   //Local variables
   char leadingZeros_seat[10];
 
-  if((cbook_file = fopen("../../resources/cbook.txt", "a")) == NULL) {
+  if((cbook_file = fopen("cbook.txt", "a")) == NULL) {
     perror("Could not open file: ");
     return FILE_OPEN_ERROR;
   }
@@ -266,8 +266,7 @@ int terminateClientProg(char * pathname, int requests_fd, int client_fd) {
     return ERROR_UNLINK;
   }
 
-  //fclose(clog_file);
-  //free(request_answer.reserved_seats);
+  free(request_answer.reserved_seats);
 
   return SUCESS;
 }
