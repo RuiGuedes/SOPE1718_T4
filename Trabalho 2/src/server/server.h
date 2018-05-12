@@ -5,7 +5,7 @@
 ////////////
 
 #define PIPE_BUF 4096
-#define SHARED 0    //sem. is shared between threads
+#define SHARED 0  //sem. is shared between threads
 #define INVALID_FUNCTION_CALL -1
 #define ERROR_CREATE_FIFO -2
 #define ERROR_OPEN_FIFO -3
@@ -37,6 +37,7 @@ pthread_cond_t * room_access_cond;
 int initSem();
 int initRequestsFifo();
 int openSLOGTextFile();
+int terminateServerProg(int requests_fd);
 int openClientFifo(Request request_info);
 int initRoom(int num_room_seats);
 int initClientFiles();

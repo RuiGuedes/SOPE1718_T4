@@ -1,7 +1,5 @@
 #include "server.h"
 
-//TODO Write SERVER CLOSED on slog_file
-
 int main(int argc, char* argv[], char* envp[]) {
 
   //Check function validation call
@@ -81,28 +79,10 @@ int main(int argc, char* argv[], char* envp[]) {
   //Prints information on sbook_file
   printServerBookings();
 
-  //Closes and destroys "requests" FIFO
-  if(close(requests_fd) == 1)
-    printf("Error while closing requests FIFO\n");
+  //Prints last message on slog_file
+  fprintf(slog_file, "SERVER CLOSED\n");
 
-  //Destroys requests fifo
-  unlink("../../resources/requests");
-
-  //Destroys semaphores
-  sem_close(&empty);
-  sem_close(&full);
-
-  //Destroys mutexes
-  pthread_mutex_destroy (&access_lock);
-  pthread_mutex_destroy (&seats_lock);
-
-  //Closes slog_file
-  fclose(slog_file);
-
-  //Liberta o espaço de seats e de room access
-  free(seats);
-  free(room_access_cond);
-
+  return terminateServerProg(requests_fd);
 }
 
 int functionCallValidation(char * argv[]) {
@@ -236,6 +216,33 @@ void terminateAllThreads(int num_threads) {
   for(int i = 0; i < num_threads; i++)
     sem_post(&full);
 
+}
+
+int terminateServerProg(int requests_fd) {
+
+  //Closes and destroys "requests" FIFO
+  if(close(requests_fd) == 1)
+    printf("Error while closing requests FIFO\n");
+
+  //Destroys requests fifo
+  unlink("../../resources/requests");
+
+  //Destroys semaphores
+  sem_close(&empty);
+  sem_close(&full);
+
+  //Destroys mutexes
+  pthread_mutex_destroy (&access_lock);
+  pthread_mutex_destroy (&seats_lock);
+
+  //Closes slog_file
+  fclose(slog_file);
+
+  //Liberta o espaço de seats e de room access
+  free(seats);
+  free(room_access_cond);
+
+  return SUCESS;
 }
 
 void * ticketOffice(void * arg) {
