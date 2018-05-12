@@ -56,13 +56,12 @@ Answer request_answer;
 // FUNCTIONS //
 ///////////////
 
-int  openRequestsFifo();
-int  initClientFifo(char * pathname);
-int  openCLOGTextFile();
-int  terminateClientProg(char * pathname, int requests_fd, int client_fd);
-int  createFormattedRequest(char * request, char * argv[]);
 void initGlobalVariables(char * argv[]);
+int  initClientFifo(char * pathname);
+int  createFormattedRequest(char * request, char * argv[]);
 void initializeAnswerStruct(char * answer);
+int  openRequestsFifo();
 int  printClientLogging();
 int  printClientBookings();
 void leadingZeros(char * leadingZeroString, int width_size, char * catString);
+int  terminateClientProg(char * pathname, int requests_fd, int client_fd);

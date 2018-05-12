@@ -1,5 +1,9 @@
 #include "server.h"
 
+//////////////////////////////
+// FUNCTIONS  - MAIN THREAD //
+//////////////////////////////
+
 int main(int argc, char* argv[], char* envp[]) {
 
   //Check function validation call
@@ -41,7 +45,7 @@ int main(int argc, char* argv[], char* envp[]) {
   //Time in which ticket offices open
   clock_t begin = clock();
 
-  printf("\nServer opened !\n\n");
+  printf(BOLDMAGENTA "Server :: " BOLDGREEN "OPEN\n" DEFAULT);
 
   //Main thread is responsible to listen client requests
   while( ((double)(clock() - begin) / CLOCKS_PER_SEC) < atoi(argv[3])) {
@@ -51,7 +55,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
     if(sem_value == 1) {
       if(read(requests_fd, request, sizeof(request)) > 0) {
-        printf("Received request :: %s\n", request);
+        printf(BOLDBLUE "Received request :: " BOLDYELLOW "%s\n" DEFAULT, request);
         sem_wait(&empty);
         sem_post(&full);
       }
@@ -65,7 +69,9 @@ int main(int argc, char* argv[], char* envp[]) {
   //Destroys requests fifo
   unlink("requests");
 
-  printf("\nServer closed ! Handling remaining requests\n\n");
+  printf(BOLDMAGENTA "Server :: " BOLDGREEN "CLOSED\n" BOLDMAGENTA "Server :: " BOLDGREEN "Handling remaining requests\n" DEFAULT);
+
+  DELAY(DELAYED_TIME);
 
   //Terminates all threads after they execute their own requests
   terminateAllThreads(atoi(argv[2]));
@@ -74,6 +80,7 @@ int main(int argc, char* argv[], char* envp[]) {
   for(int i = 1; i <= atoi(argv[2]); i++)
       pthread_join(thread_ids[i], NULL);
 
+  printf(BOLDMAGENTA "Server :: " BOLDGREEN "Ticket offices handled all remaining requests\n" DEFAULT);
 
   //Prints information on sbook_file
   printServerBookings();
@@ -237,6 +244,10 @@ int terminateServerProg(int requests_fd) {
   return SUCESS;
 }
 
+//////////////////////////
+// FUNCTIONS  - THREADS //
+//////////////////////////
+
 void * ticketOffice(void * arg) {
 
   int tid = *(int *)arg;
@@ -250,6 +261,7 @@ void * ticketOffice(void * arg) {
 
     char office_request[PIPE_BUF];
     strcpy(office_request,request);
+    strcpy(request, "");
 
     sem_post(&empty);
 
@@ -289,6 +301,10 @@ void * ticketOffice(void * arg) {
         num_wanted_seats--;
       }
 
+      //Free access to all pref_seat_list seats
+      seats[seat_number].access_status = 0;
+      pthread_cond_signal(&room_access_cond[seat_number]);
+
       pref_seat_list_pointer++;
     }
 
@@ -305,18 +321,12 @@ void * ticketOffice(void * arg) {
     if(request_info.validation_return_value == 0)
       num_room_seats_remaining -= request_info.num_wanted_seats;
 
-    //Opens client FIFO to send answer
-    client_fifo_fd = openClientFifo(request_info);
+    //Sends answer to respective client
+    sendAnswerToClient(request_info, reserved_seats);
 
     //Stores request information on slog text file
-    sendAnswerToClient(request_info, reserved_seats);
     printServerLogging(tid, request_info, reserved_seats);
 
-    //Free access to all pref_seat_list seats
-    for(int i = 0; i < request_info.num_pref_seats; i++) {
-      seats[request_info.pref_seat_list[i]].access_status = 0;
-      pthread_cond_signal(&room_access_cond[request_info.pref_seat_list[i]]);
-    }
   }
 
   fprintf(slog_file, "%02d-CLOSE\n", tid);
@@ -336,7 +346,7 @@ int openClientFifo(Request request_info) {
   strcat(pathname,pid);
 
   //Opens requests fifo on read-only mode
-  if((fifo_fd = open(pathname, O_WRONLY)) == -1) {
+  if((fifo_fd = open(pathname, O_WRONLY | O_NONBLOCK)) == -1) {
     perror("Could not open client fifo on write only mode: ");
     return ERROR_OPEN_FIFO;
   }
@@ -369,9 +379,13 @@ void sendAnswerToClient(Request request_info, int * reserved_seats) {
   //Appends new line character
   strcat(answer,"\n");
 
+  //Opens client FIFO to send answer
+  client_fifo_fd = openClientFifo(request_info);
+
   //Writes answer to client fifo
   write(client_fifo_fd, answer, sizeof(answer));
 
+  //Closes client dedicated fifo
   close(client_fifo_fd);
 }
 
