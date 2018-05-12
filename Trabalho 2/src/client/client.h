@@ -19,6 +19,7 @@
 #define ERROR_CLOSE_FIFO -4
 #define ERROR_UNLINK -5
 #define FILE_OPEN_ERROR -5
+#define ERROR -6
 
 #define WIDTH_PID 5
 #define WIDTH_XXNN 5

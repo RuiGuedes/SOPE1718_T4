@@ -49,7 +49,7 @@ int main(int argc, char* argv[], char* envp[]) {
   //Time in which ticket offices open
   clock_t begin = clock();
 
-  printf("Server opened !\n");
+  printf("\nServer opened !\n\n");
 
   //Main thread is responsible to listen client requests
   while( ((double)(clock() - begin) / CLOCKS_PER_SEC) < atoi(argv[3])) {
@@ -66,7 +66,14 @@ int main(int argc, char* argv[], char* envp[]) {
     }
   }
 
-  printf("Server closed ! Handling remaining requests\n");
+  //Closes and destroys "requests" FIFO
+  if(close(requests_fd) == 1)
+    printf("Error while closing requests FIFO\n");
+
+  //Destroys requests fifo
+  unlink("../../resources/requests");
+
+  printf("\nServer closed ! Handling remaining requests\n\n");
 
   //Terminates all threads after they execute their own requests
   terminateAllThreads(atoi(argv[2]));
@@ -220,13 +227,6 @@ void terminateAllThreads(int num_threads) {
 
 int terminateServerProg(int requests_fd) {
 
-  //Closes and destroys "requests" FIFO
-  if(close(requests_fd) == 1)
-    printf("Error while closing requests FIFO\n");
-
-  //Destroys requests fifo
-  unlink("../../resources/requests");
-
   //Destroys semaphores
   sem_close(&empty);
   sem_close(&full);
@@ -340,7 +340,7 @@ int openClientFifo(Request request_info) {
   strcat(pathname,pid);
 
   //Opens requests fifo on read-only mode
-  if((fifo_fd = open(pathname, O_WRONLY | O_NONBLOCK)) == -1) {
+  if((fifo_fd = open(pathname, O_WRONLY)) == -1) {
     printf("Could not open client fifo %s on write only mode\n", pathname);
     printf("%d\n", request_info.client_pid);
     return ERROR_OPEN_FIFO;

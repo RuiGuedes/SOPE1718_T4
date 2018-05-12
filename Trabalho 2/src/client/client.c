@@ -15,23 +15,23 @@ int main(int argc, char* argv[], char* envp[]) {
   //Global variables initialization
   initGlobalVariables(argv);
 
+  //Opens requests fifo on write only mode
+  if((requests_fd = openRequestsFifo()) == ERROR_OPEN_FIFO)
+    return ERROR_OPEN_FIFO;
+
+  //Prepares request to be sent to the server
+  createFormattedRequest(request, argv);
+
+  //Writes request to requests fifo
+  if(write(requests_fd, request, sizeof(request)) < 0)
+    return ERROR;
+
   //Creates dedicated FIFO
   if((client_fd = initClientFifo(pathname)) == ERROR_CREATE_FIFO)
     return ERROR_CREATE_FIFO;
   else if(client_fd == ERROR_OPEN_FIFO)
     return ERROR_OPEN_FIFO;
 
-
-  //Prepares request to be sent to the server
-  createFormattedRequest(request, argv);
-
-  //Opens requests fifo on write only mode
-  if((requests_fd = openRequestsFifo()) == ERROR_OPEN_FIFO)
-    return ERROR_OPEN_FIFO;
-
-
-  //Writes request to requests fifo
-  write(requests_fd, request, sizeof(request));
 
   //Time which client will start waiting for an anwser
   clock_t begin = clock();
@@ -48,7 +48,8 @@ int main(int argc, char* argv[], char* envp[]) {
   }
 
   //Time out response
-  initializeAnswerStruct("0 -7 0\n");
+  request_answer.client_pid = getpid();
+  request_answer.validation_return_value = -7;
   printClientLogging();
 
   //Terminate client program
@@ -106,7 +107,7 @@ void initializeAnswerStruct(char * answer) {
   //Local Variables
   char * token;
   int type = 0, reserved_seats_pointer = 0;
-  const char delimiter[3] = " \n";
+  const char delimiter[4] = " \n";
 
   //Initializes seats array of request_answer struct
   request_answer.reserved_seats = malloc(num_wanted_seats*sizeof(int));
@@ -138,7 +139,7 @@ int openRequestsFifo() {
   int fifo_fd;
 
   //Opens requests fifo
-  if((fifo_fd = open("../../resources/requests", O_WRONLY | O_NONBLOCK)) == -1) {
+  if((fifo_fd = open("../../resources/requests", O_WRONLY)) == -1) {
     printf("Could not open <requests> FIFO on write only mode\n");
     return ERROR_OPEN_FIFO;
   }
