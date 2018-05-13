@@ -347,7 +347,7 @@ int openClientFifo(Request request_info) {
 
   //Opens requests fifo on read-only mode
   if((fifo_fd = open(pathname, O_WRONLY | O_NONBLOCK)) == -1) {
-    perror("Could not open client fifo on write only mode: ");
+    printf(BOLDRED "%s -> Could not be opened due to client time out\n" DEFAULT, pathname);
     return ERROR_OPEN_FIFO;
   }
 

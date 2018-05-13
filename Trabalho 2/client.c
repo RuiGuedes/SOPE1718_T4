@@ -36,7 +36,7 @@ int main(int argc, char* argv[], char* envp[]) {
   clock_t begin = clock();
 
   //Waits for an answer
-  while( ((double)(clock() - begin) / (CLOCKS_PER_SEC * 1000)) < time_out) {
+  while( (((double)(clock() - begin) / CLOCKS_PER_SEC) * 1000) < time_out) {
 
     if(read(client_fd, answer, sizeof(answer)) > 0) {
         initializeAnswerStruct(answer);
