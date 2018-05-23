@@ -78,7 +78,8 @@ int main(int argc, char* argv[], char* envp[]) {
 
   //Wait's for all threads
   for(int i = 1; i <= atoi(argv[2]); i++)
-      pthread_join(thread_ids[i], NULL);
+    pthread_tryjoin_np(thread_ids[i], NULL);
+    //pthread_join(thread_ids[i], NULL);
 
   printf(BOLDMAGENTA "Server :: " BOLDGREEN "Ticket offices handled all remaining requests\n" DEFAULT);
 
@@ -327,6 +328,8 @@ void * ticketOffice(void * arg) {
     //Stores request information on slog text file
     printServerLogging(tid, request_info, reserved_seats);
 
+    if(terminate)
+      break;
   }
 
   fprintf(slog_file, "%02d-CLOSE\n", tid);
